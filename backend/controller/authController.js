@@ -90,4 +90,50 @@ export const signOut = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: `Signout error ${error}` })
     }
-}
+} 
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { username, email, photoUrl } = req.body;
+
+    let finalPhotoUrl = photoUrl;
+
+    // Google ka image Cloudinary me upload karo (sirf jab image aaye)
+    if (photoUrl) {
+      try {
+        finalPhotoUrl = await uploadOnCloudinary(photoUrl);
+      } catch (err) {
+        console.log("Cloudinary upload failed, using original URL");
+      }
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        username,
+        email,
+        photoUrl: finalPhotoUrl
+      });
+    } else {
+      if (!user.photoUrl && finalPhotoUrl) {
+        user.photoUrl = finalPhotoUrl;
+        await user.save();
+      }
+    }
+
+    let token = await genToken(user._id);
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    return res.status(200).json(user);
+
+  } catch (error) {
+    return res.status(500).json({ message: `GoogleAuth error ${error}` });
+  }
+};
