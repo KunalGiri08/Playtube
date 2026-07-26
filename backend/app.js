@@ -17,11 +17,12 @@ app.use(express.json())
 
 //routes import
 import authRouter from "./route/authRoute.js";
+import userRouter from "./route/userRoute.js";
 
 
 //routes declaration
 app.use("/api/auth", authRouter)
-
+app.use("/api/user", userRouter)
 
 
 export default app
