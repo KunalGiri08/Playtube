@@ -9,16 +9,22 @@ const uploadOnCloudinary = async (filePath) => {
         api_secret: process.env.API_SECRET
     });
     try {
-        if(!filePath){
+        if (!filePath) {
             return null;
         }
-        const result = await cloudinary.uploader.upload(filePath, {resource_type:'auto'})
+
+        const result = await cloudinary.uploader.upload(filePath, { resource_type: 'auto' })
         fs.unlinkSync(filePath)
         return result.secure_url
 
     } catch (error) {
-        console.log(error)
-        fs.unlinkSync(filePath)
+        console.log("CLOUDINARY ERROR:", error);
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        throw error;
     }
 }
 
