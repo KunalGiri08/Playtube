@@ -1,27 +1,27 @@
 import User from "../model/userModel.js";
 
 export const getCurrentUser = async (req, res) => {
-    try {
-        const user = await User.findById(req.userId).select("-password");
+  try {
+    const user = await User.findById(req.userId).select("-password");
 
-        if (!user) {
-            return res.status(404).json({ message: "User is not found" });
-        }
-
-        return res.status(200).json(user);
-
-    } catch (error) {
-        return res.status(500).json({
-            message: `getCurrentUser error ${error}`
-        });
+    if (!user) {
+      return res.status(404).json({ message: "User is not found" });
     }
+
+    return res.status(200).json(user);
+
+  } catch (error) {
+    return res.status(500).json({
+      message: `getCurrentUser error ${error}`
+    });
+  }
 };
 
 // Create Channel
 export const createChannel = async (req, res) => {
   try {
-    const { name, description ,category} = req.body;
-    const userId = req.userId; 
+    const { name, description, category } = req.body;
+    const userId = req.userId;
 
     // Check if user already has a channel
     const existingChannel = await Channel.findOne({ owner: userId });
@@ -35,7 +35,7 @@ export const createChannel = async (req, res) => {
       return res.status(400).json({ message: "Channel name already taken" });
     }
 
-      let avatar;
+    let avatar;
     let bannerImage;
 
     if (req.files?.avatar) {
@@ -67,5 +67,81 @@ export const createChannel = async (req, res) => {
     );
   } catch (error) {
     res.status(500).json({ message: "Error creating channel", error: error.message });
+  }
+};
+
+
+// Get Channel for Logged-in User
+export const getChannel = async (req, res) => {
+  try {
+    const userId = req.userId; // from isAuth middleware
+
+    const channel = await Channel.findOne({ owner: userId })
+      .populate("owner")
+
+
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    return res.status(200).json(channel);
+  } catch (error) {
+    console.error("Get Channel Error:", error);
+    return res.status(500).json({
+      message: "Error fetching channel",
+      error: error.message,
+    });
+  }
+};
+
+// Update Channel
+export const updateChannel = async (req, res) => {
+  try {
+    const { name, description, category } = req.body;
+    const userId = req.userId;
+
+    // Find channel owned by user
+    const channel = await Channel.findOne({ owner: userId });
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    // Check if new name is already taken (by another channel)
+    if (name && name !== channel.name) {
+      const nameExists = await Channel.findOne({ name });
+      if (nameExists) {
+        return res.status(400).json({ message: "Channel name already taken" });
+      }
+      channel.name = name;
+    }
+
+    // Update text fields
+    if (description !== undefined) channel.description = description;
+    if (category !== undefined) channel.category = category;
+
+    // Handle file uploads (avatar & bannerImage)
+    if (req.files?.avatar) {
+      const avatar = await uploadOnCloudinary(req.files.avatar[0].path);
+      channel.avatar = avatar;
+    }
+    if (req.files?.bannerImage) {
+      const bannerImage = await uploadOnCloudinary(req.files.bannerImage[0].path);
+      channel.bannerImage = bannerImage;
+    }
+
+    // Save updated channel
+    const updatedChannel = await channel.save();
+
+
+    // Optionally update user's username & photo if channel name/avatar changes
+    await User.findByIdAndUpdate(userId, {
+      username: name || undefined,
+      photoUrl: channel.avatar || undefined
+    }, { new: true });
+
+    return res.status(200).json(updatedChannel);
+  } catch (error) {
+    console.error("Update Channel Error:", error);
+    return res.status(500).json({ message: "Error updating channel", error: error.message });
   }
 };
