@@ -1,4 +1,7 @@
 import User from "../model/userModel.js";
+import Channel from "../model/channelModel.js";
+import uploadOnCloudinary from "../config/cloudinary.js";
+
 
 export const getCurrentUser = async (req, res) => {
   try {
