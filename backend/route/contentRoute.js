@@ -2,6 +2,7 @@ import express from "express"
 import isAuth from "../middleware/isAuth.js";
 import upload from "../middleware/multer.js";
 import { createVideo } from "../controller/videoController.js";
+import { createShort } from "../controller/shortController.js";
 
 const contentRouter = express.Router()
   
@@ -11,6 +12,10 @@ contentRouter.post("/upload-video",isAuth,upload.fields([
     { name: "thumbnail", maxCount: 1 }
   ]),createVideo);
 
+
+
+//for shortController
+contentRouter.post("/upload-short",isAuth,upload.single("short") , createShort)
 
 
 
