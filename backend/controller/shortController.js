@@ -41,3 +41,16 @@ export const createShort = async (req, res) => {
 };
 
 
+
+export const getAllShorts = async (req, res) => {
+  try {
+    const shorts = await Short.find()
+      .populate("channel comments.author comments.replies.author") // optional: populate channel info
+      .sort({ createdAt: -1 }); // newest first
+
+    res.status(200).json(shorts);
+  } catch (error) {
+    console.error("Error fetching shorts:", error);
+res.status(500).json({message : "Failed to fetch short"});
+  }
+};
