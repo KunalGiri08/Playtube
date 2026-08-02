@@ -67,3 +67,32 @@ export const createVideo = async (req, res) => {
     });
   }
 };
+
+
+// Get all videos from a channel (for playlist selection)
+export const getChannelVideos = async (req, res) => {
+  try {
+    const { channelId } = req.body;
+
+    if (!channelId) {
+      return res.status(400).json({ message: "Channel ID is required" });
+    }
+
+    const channel = await Channel.findById(channelId);
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    const videos = await Video.find({ channel: channelId })
+      .select("title thumbnail createdAt")
+      .sort({ createdAt: -1 });
+
+   return res.status(200).json({ videos });
+  } catch (error) {
+   return res.status(500).json({
+      message: "Error fetching channel videos",
+      error: error.message
+    });
+  }
+};
+
