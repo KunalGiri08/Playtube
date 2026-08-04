@@ -144,3 +144,44 @@ export const toggleDislikeVideo = async (req, res) => {
     return res.status(500).json({ message: "Error toggling dislike", error: error.message });
   }
 };
+
+// ---------------- TOGGLE SAVE ----------------
+export const toggleSaveVideo = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const userId = req.userId;
+
+    const video = await Video.findById(videoId);
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    if (video.saveBy.includes(userId)) {
+      video.saveBy.pull(userId);
+    } else {
+      video.saveBy.push(userId);
+    }
+
+    await video.save();
+   return res.status(200).json(video);
+  } catch (error) {
+   return res.status(500).json({ message: "Error toggling save", error: error.message });
+  }
+};
+
+// ---------------- ADD VIEW ----------------
+export const addView = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+
+    const video = await Video.findByIdAndUpdate(
+      videoId,
+      { $inc: { views: 1 } },
+      { new: true }
+    );
+
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+   return res.status(200).json(video);
+  } catch (error) {
+   return res.status(500).json({ message: "Error adding view", error: error.message });
+  }
+};
