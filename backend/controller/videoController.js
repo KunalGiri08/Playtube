@@ -96,3 +96,51 @@ export const getChannelVideos = async (req, res) => {
   }
 };
 
+
+// ---------------- LIKE VIDEO ----------------
+export const toggleLikeVideo = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const userId = req.userId; // ✅ auth middleware se aayega
+
+    const video = await Video.findById(videoId);
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    if (video.likes.includes(userId)) {
+      // already liked → remove
+      video.likes.pull(userId);
+    } else {
+      // add like → remove dislike if exists
+      video.likes.push(userId);
+      video.dislikes.pull(userId);
+    }
+
+    await video.save();
+   return res.status(200).json(video);
+  } catch (error) {
+  return  res.status(500).json({ message: "Error toggling like", error: error.message });
+  }
+};
+
+// ---------------- DISLIKE VIDEO ----------------
+export const toggleDislikeVideo = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const userId = req.userId;
+
+    const video = await Video.findById(videoId);
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    if (video.dislikes.includes(userId)) {
+      video.dislikes.pull(userId);
+    } else {
+      video.dislikes.push(userId);
+      video.likes.pull(userId);
+    }
+
+    await video.save();
+    return res.status(200).json(video);
+  } catch (error) {
+    return res.status(500).json({ message: "Error toggling dislike", error: error.message });
+  }
+};
