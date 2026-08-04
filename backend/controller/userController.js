@@ -148,3 +148,65 @@ export const updateChannel = async (req, res) => {
     return res.status(500).json({ message: "Error updating channel", error: error.message });
   }
 };
+
+
+export const toggleSubscribe = async (req, res) => {
+  try {
+    const { channelId } = req.body;   // ✅ body se channelId
+    const userId = req.userId;        // ✅ middleware se userId (JWT auth)
+
+    if (!channelId) {
+      return res.status(400).json({ message: "channelId is required" });
+    }
+
+    // 🔎 Channel find karo
+    const channel = await Channel.findById(channelId);
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    // 🔁 Check if user already subscribed
+    const isSubscribed = channel?.subscribers?.includes(userId);
+
+    if (isSubscribed) {
+      // ❌ unsubscribe
+      channel.subscribers.pull(userId);
+    } else {
+      // ✅ subscribe
+      channel.subscribers.push(userId);
+    }
+
+    await channel.save();
+
+    // ✅ Save ke baad updated channel wapas fetch karo with populate
+    const updatedChannel = await Channel.findById(channelId)
+      .populate("owner")
+      .populate("videos")
+      .populate("shorts")
+      .populate("communityPosts")
+      .populate({
+        path: "playlists",
+        populate: {
+          path: "videos",
+          model: "Video",
+          populate: {
+            path: "channel",
+            model: "Channel",
+          },
+        },
+      });
+
+     
+
+    return res.status(200).json(updatedChannel);
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Error toggling subscription",
+      error: error.message,
+    });
+  }
+};
+
+
+
