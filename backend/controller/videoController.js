@@ -185,3 +185,69 @@ export const addView = async (req, res) => {
    return res.status(500).json({ message: "Error adding view", error: error.message });
   }
 };
+
+// ---------------- ADD COMMENT ----------------
+export const addComment = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const { message } = req.body;
+    const userId = req.userId;
+
+    // pehle video lao
+    const video = await Video.findById(videoId);
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    // comment push karo
+    video.comments.push({ author: userId, message });
+    await video.save();
+
+    // ✅ ab dobara fetch karo with nested populate
+    const populatedVideo = await Video.findById(videoId)
+      .populate({
+        path: "comments.author",
+        select: "username photoUrl email"
+      })
+      .populate({
+        path: "comments.replies.author",
+        select: "username photoUrl email"
+      });
+
+    return res.status(201).json(populatedVideo);
+  } catch (error) {
+    return res.status(500).json({ message: "Error adding comment", error: error.message });
+  }
+};
+
+
+// ---------------- ADD REPLY ----------------
+export const addReply = async (req, res) => {
+  try {
+    const { videoId, commentId } = req.params;
+    const { message } = req.body;
+    const userId = req.userId;
+
+    const video = await Video.findById(videoId);
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    const comment = video.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    comment.replies.push({ author: userId, message });
+    await video.save();
+
+    // ✅ again fetch with populate
+    const populatedVideo = await Video.findById(videoId)
+      .populate({
+        path: "comments.author",
+        select: "username photoUrl email"
+      })
+      .populate({
+        path: "comments.replies.author",
+        select: "username photoUrl email"
+      });
+
+    return res.status(201).json(populatedVideo);
+  } catch (error) {
+    return res.status(500).json({ message: "Error adding reply", error: error.message });
+  }
+};
