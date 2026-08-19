@@ -208,5 +208,49 @@ export const toggleSubscribe = async (req, res) => {
   }
 };
 
+export const getAllChannel = async (req,res) => {
+  try {
+    const channel = await Channel.find() .populate("owner")
+    
+      .populate("videos")
+      .populate("shorts")
+      .populate("subscribers")
+      .populate({
+        path: "communityPosts",
+        populate: {
+          path: "channel",
+          model: "Channel",
+         
+        },
+       })
+       .populate({
+        path: "playlists",
+        populate: {
+          path: "videos",
+          model: "Video",
+          populate: {
+            path: "channel", // video ke andar channel populate hoga
+            model: "Channel",
+          },
+        },
+      });
+
+    
+    if(!channel){
+      return res.status(400).json({message:"Channel is not found"})
+    }
+
+    return res.status(200).json(channel)
+
+  } catch (error) {
+    console.error("Get All Channel Error:", error);
+    return res.status(500).json({
+      message: "Error fetching channel",
+      error: error.message,
+    });
+  }
+}
+
+
 
 
