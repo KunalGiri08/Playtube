@@ -54,3 +54,24 @@ export const createPlaylist = async (req, res) => {
   }
 };
 
+// ---------------- TOGGLE SAVE ----------------
+export const toggleSavePlaylist = async (req, res) => {
+  try {
+    const { playlistId } = req.body;
+    const userId = req.userId;
+
+    const playlist = await Playlist.findById(playlistId);
+    if (!playlist) return res.status(404).json({ message: "playlist not found" });
+
+    if (playlist.saveBy.includes(userId)) {
+      playlist.saveBy.pull(userId);
+    } else {
+      playlist.saveBy.push(userId);
+    }
+
+    await playlist.save();
+   return res.status(200).json(playlist);
+  } catch (error) {
+   return res.status(500).json({ message: "Error toggling save", error: error.message });
+  }
+};
