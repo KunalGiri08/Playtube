@@ -54,3 +54,28 @@ return res.status(500).json({message : "Failed to fetch posts"});
   }
 };
 
+
+// ---------------- LIKE VIDEO ----------------
+export const toggleLikePost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const userId = req.userId; // ✅ auth middleware se aayega
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    if (post.likes.includes(userId)) {
+      // already liked → remove
+      post.likes.pull(userId);
+    } else {
+      // add like → remove dislike if exists
+      post.likes.push(userId);
+      
+    }
+
+    await post.save();
+   return res.status(200).json(post);
+  } catch (error) {
+  return  res.status(500).json({ message: "Error toggling like", error: error.message });
+  }
+};
