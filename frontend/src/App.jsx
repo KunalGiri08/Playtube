@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Shorts from "./pages/Shorts/Shorts";
 import SignIn from "./Pages/SignIn";
@@ -20,6 +20,7 @@ import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import GetAllContentData from "./customHooks/UsegetAllContentData";
 import WatchShortPage from "./Pages/Shorts/WatchShortPage";
+import ChannelPage from "./Pages/Channel/ChannelPage";
 export const serverUrl = "http://localhost:8000";
 
 const ProtectedRoute = ({ userData, children }) => {
@@ -35,6 +36,11 @@ function App() {
   UsegetChannel();
   GetAllContentData();
   const { userData } = useSelector((state) => state.user);
+  function ChannelPageWrapper() {
+  const location = useLocation();
+  return <ChannelPage key={location.pathname} />;
+}
+
   return (
     <>
       <CustomAlert />
@@ -105,6 +111,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/channelpage/:channelId"
+            element={
+              <ProtectedRoute userData={userData}>
+                <ChannelPageWrapper />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/mobilepro" element={<MobileProfile />} />
         </Route>
 
