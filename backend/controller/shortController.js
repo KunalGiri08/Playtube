@@ -214,3 +214,24 @@ export const toggleSaveShort = async (req, res) => {
   }
 };
 
+// ---------------- Get Liked Shorts ----------------
+export const getLikedShorts = async (req, res) => {
+  try {
+    const userId = req.userId; // middleware se aayega
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    // Find shorts jisme likes me userId hai
+    const likedShorts = await Short.find({ likes: userId })
+      .populate("channel", "name avatar")
+      .populate("likes", "username");
+
+    res.status(200).json(likedShorts || []);
+  } catch (error) {
+    console.error("Error fetching liked shorts:", error);
+    res.status(500).json({
+      message: "Server error while fetching liked shorts",
+    });
+  }
+};
