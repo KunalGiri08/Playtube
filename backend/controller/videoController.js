@@ -251,3 +251,28 @@ export const addReply = async (req, res) => {
     return res.status(500).json({ message: "Error adding reply", error: error.message });
   }
 };
+
+
+// ---------------- Get Liked Videos ----------------
+export const getLikedVideos = async (req, res) => {
+  try {
+    const userId = req.userId; // middleware se aayega
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    // Find videos jisme likes me userId hai
+    const likedVideos = await Video.find({ likes: userId })
+      .populate("channel", "name avatar")
+      .populate("likes", "username");
+
+   
+
+    res.status(200).json(likedVideos || []);
+  } catch (error) {
+    console.error("Error fetching liked videos:", error);
+    res.status(500).json({
+      message: "Server error while fetching liked videos",
+    });
+  }
+};
