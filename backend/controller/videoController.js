@@ -276,3 +276,28 @@ export const getLikedVideos = async (req, res) => {
     });
   }
 };
+// ---------------- Get Saved Videos ----------------
+export const getSavedVideos = async (req, res) => {
+  try {
+    const userId = req.userId; // ✅ Middleware se aa rahi hai
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    // Find videos jisme userId saveBy array me ho
+    const savedVideos = await Video.find({ saveBy: userId })
+      .populate("channel", "name avatar") // channel info include karo
+      .populate("saveBy", "username");    // optional: dekhna kaun save kar chuka hai
+
+    if (!savedVideos || savedVideos.length === 0) {
+      return res.status(404).json({ message: "No saved videos found" });
+    }
+
+    res.status(200).json(savedVideos);
+  } catch (error) {
+    console.error("Error fetching saved videos:", error);
+    res.status(500).json({
+      message: "Server error while fetching saved videos",
+    });
+  }
+};
