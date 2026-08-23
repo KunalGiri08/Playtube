@@ -235,3 +235,29 @@ export const getLikedShorts = async (req, res) => {
     });
   }
 };
+
+// ---------------- Get Saved Shorts ----------------
+export const getSavedShorts = async (req, res) => {
+  try {
+    const userId = req.userId; // ✅ Middleware se aa rahi hai
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    // Find videos jisme userId saveBy array me ho
+    const savedShorts = await Short.find({ saveBy: userId })
+      .populate("channel", "name avatar") // channel info include karo
+      .populate("saveBy", "username");    // optional: dekhna kaun save kar chuka hai
+
+    if (!savedShorts || savedShorts.length === 0) {
+      return res.status(404).json({ message: "No saved videos found" });
+    }
+
+    res.status(200).json(savedShorts);
+  } catch (error) {
+    console.error("Error fetching saved shorts:", error);
+    res.status(500).json({
+      message: "Server error while fetching saved shorts",
+    });
+  }
+};
