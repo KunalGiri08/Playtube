@@ -75,3 +75,35 @@ export const toggleSavePlaylist = async (req, res) => {
    return res.status(500).json({ message: "Error toggling save", error: error.message });
   }
 };
+
+// ---------------- GET SAVED PLAYLISTS ----------------
+export const getSavedPlaylists = async (req, res) => {
+  try {
+    const userId = req.userId; // ✅ middleware se user ki id aa rahi hai na, ensure kar lena
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    // Find playlists jisme user ki id saveBy array me hai
+    const savedPlaylists = await Playlist.find({
+      saveBy: userId,
+    })
+      .populate("channel", "name avatar") // channel info
+      .populate({
+        path: "videos",
+        populate: { path: "channel", select: "name avatar" }, // videos ke andar channel details
+      });
+
+    if (!savedPlaylists || savedPlaylists.length === 0) {
+      return res.status(404).json({ message: "No saved playlists found" });
+    }
+
+    res.status(200).json(savedPlaylists);
+  } catch (error) {
+    console.error("Error fetching saved playlists:", error);
+    res.status(500).json({
+      message: "Server error while fetching saved playlists",
+    });
+  }
+};
