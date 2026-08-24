@@ -207,7 +207,7 @@ export const toggleSubscribe = async (req, res) => {
     });
   }
 };
-
+// Get All Channels 
 export const getAllChannel = async (req,res) => {
   try {
     const channel = await Channel.find() .populate("owner")
@@ -253,4 +253,74 @@ export const getAllChannel = async (req,res) => {
 
 
 
+
+
+
+// Get Subscribed Content (Videos & Shorts) for Logged-in User
+export const getSubscribedContent = async (req, res) => {
+  try {
+    const userId = req.userId; // ✅ make sure user middleware se aa raha hai
+
+    // Find all channels where user is a subscriber
+    const subscribedChannels = await Channel.find({
+      subscribers: userId,
+    })
+      .populate({
+        path: "videos",
+        populate: { path: "channel", select: "name avatar" }, // video ke andar channel details
+      })
+      .populate({
+        path: "shorts",
+        populate: { path: "channel", select: "name avatar" }, // short ke andar channel details
+      });
+
+    if (!subscribedChannels || subscribedChannels.length === 0) {
+      return res.status(404).json({ message: "No subscribed channels found" });
+    }
+
+    // Separate out videos and shorts from all subscribed channels
+    const videos = subscribedChannels.flatMap((ch) => ch.videos);
+    const shorts = subscribedChannels.flatMap((ch) => ch.shorts);
+
+    res.status(200).json({
+      subscribedChannels,
+      videos,
+      shorts,
+    });
+  } catch (error) {
+    console.error("Error fetching subscribed content:", error);
+    res.status(500).json({
+      message: "Server error while fetching subscribed content"
+    });
+  }
+};
+
+// Get User History
+export const getHistory = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const user = await User.findById(userId)
+      .populate({
+        path: "history.contentId", // refPath ke basis pe Video ya Short populate hoga
+        populate: {
+          path: "channel", // ✅ contentId ke andar ka channel populate karega
+          select: "name avatar", // sirf avatar aur name bhejega
+        },
+      })
+      .select("history");
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // ✅ Latest history upar
+    const sortedHistory = [...user.history].sort(
+      (a, b) => new Date(b.watchedAt) - new Date(a.watchedAt)
+    );
+
+    res.status(200).json(sortedHistory);
+  } catch (err) {
+    console.error("❌ History fetch error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
