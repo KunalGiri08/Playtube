@@ -295,6 +295,47 @@ export const getSubscribedContent = async (req, res) => {
   }
 };
 
+// Add to User History
+export const addToHistory = async (req, res) => {
+  try {
+    const userId = req.userId; // isAuth middleware se
+    const { contentId, contentType } = req.body; // { contentId: "...", contentType: "Video" ya "Short" }
+
+    // ✅ check valid type
+    if (!["Video", "Short"].includes(contentType)) {
+      return res.status(400).json({ message: "Invalid contentType" });
+    }
+
+    // ✅ DB me content exist karta hai ya nahi
+    let content;
+    if (contentType === "Video") {
+      content = await Video.findById(contentId);
+    } else {
+      content = await Short.findById(contentId);
+    }
+    if (!content) return res.status(404).json({ message: `${contentType} not found` });
+
+    // ✅ Duplicate avoid karna (pehle remove fir push)
+    await User.findByIdAndUpdate(userId, {
+      $pull: { history: { contentId, contentType } }
+    });
+
+    // ✅ Add new entry
+    await User.findByIdAndUpdate(userId, {
+      $push: {
+        history: { contentId, contentType, watchedAt: new Date() }
+      }
+    });
+
+    res.status(200).json({ message: "Added to history" });
+  } catch (err) {
+    console.error("❌ addToHistory error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
 // Get User History
 export const getHistory = async (req, res) => {
   try {
