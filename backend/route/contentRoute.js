@@ -1,8 +1,11 @@
 import express from "express"
 import isAuth from "../middleware/isAuth.js";
 import upload from "../middleware/multer.js";
-import { addComment, addReply, addView, createVideo, getChannelVideos, toggleDislikeVideo, toggleLikeVideo, toggleSaveVideo } from "../controller/videoController.js";
-import { addCommentforShort, addReplyforShort, addViewforShort, createShort, getAllShorts, toggleDislikeShort, toggleLikeShort, toggleSaveShort } from "../controller/shortController.js";
+import { addComment, addReply, addView, createVideo, getChannelVideos, getLikedVideos, getSavedVideos, toggleDislikeVideo, toggleLikeVideo, toggleSaveVideo } from "../controller/videoController.js";
+import { addCommentforShort, addReplyforShort, addViewforShort, createShort, getAllShorts, getLikedShorts, getSavedShorts, toggleDislikeShort, toggleLikeShort, toggleSaveShort } from "../controller/shortController.js";
+import { createPlaylist, getSavedPlaylists, toggleSavePlaylist } from "../controller/playlistController.js";
+import { addCommentInPost, addReplyInPost, createPost, getAllPosts, toggleLikePost } from "../controller/postController.js";
+import { filterCategoryWithAi, searchWithAi } from "../controller/aiController.js";
 
 const contentRouter = express.Router()
 
@@ -29,6 +32,12 @@ contentRouter.post("/video/:videoId/comment", isAuth, addComment);
 
 // 💬 Add reply to comment
 contentRouter.post("/video/:videoId/:commentId/reply", isAuth, addReply);
+// Get liked videos
+contentRouter.get("/likedvideos",isAuth, getLikedVideos)
+// Get saved videos
+contentRouter.get("/savevideos",isAuth, getSavedVideos)
+
+
 
 
 //for shortController
@@ -52,8 +61,50 @@ contentRouter.post("/short/:shortId/comment", isAuth, addCommentforShort);
 
 // 💬 Add reply to comment short
 contentRouter.post("/short/:shortId/:commentId/reply", isAuth, addReplyforShort);
+// Get liked shorts
+contentRouter.get("/likedshorts",isAuth, getLikedShorts)
+// Get saved shorts
+contentRouter.get("/saveshorts",isAuth, getSavedShorts)
 
 
+
+
+// for postController
+contentRouter.post("/create-post",isAuth,upload.single("image"),createPost);
+
+contentRouter.delete("/delete-post/:postId", isAuth, deletePost);
+
+contentRouter.put("/post/toggle-like", isAuth, toggleLikePost);
+
+// 💬 Add comment Post
+contentRouter.post("/post/comment", isAuth, addCommentInPost);
+
+// 💬 Add reply to comment Post
+contentRouter.post("/post/reply", isAuth, addReplyInPost);
+
+contentRouter.get("/allposts", getAllPosts)
+
+
+
+//for  playlistController
+contentRouter.post("/create-playlist",isAuth,createPlaylist);
+
+contentRouter.get("/fetch-playlist/:playlistId", fetchPlaylist);
+
+contentRouter.put("/update-playlist/:playlistId", isAuth, updatePlaylist);
+
+contentRouter.delete("/delete-playlist/:playlistId", isAuth, deletePlaylist);
+
+contentRouter.post("/playlist/toggle-save" , isAuth , toggleSavePlaylist)
+
+contentRouter.get("/saveplaylist",isAuth,getSavedPlaylists)
+
+
+
+// for Ai Controller
+
+contentRouter.post("/search" , isAuth , searchWithAi)
+contentRouter.post("/filter" , isAuth , filterCategoryWithAi)
 
 
 
