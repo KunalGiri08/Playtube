@@ -79,3 +79,69 @@ export const toggleLikePost = async (req, res) => {
   return  res.status(500).json({ message: "Error toggling like", error: error.message });
   }
 };
+
+// ---------------- ADD COMMENT ----------------
+export const addCommentInPost = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const { message } = req.body;
+    const userId = req.userId;
+
+    // pehle video lao
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    // comment push karo
+    post.comments.push({ author: userId, message });
+    await post.save();
+
+    // ✅ ab dobara fetch karo with nested populate
+    const populatedPost = await Post.findById(postId)
+      .populate({
+        path: "comments.author",
+        select: "username photoUrl email"
+      })
+      .populate({
+        path: "comments.replies.author",
+        select: "username photoUrl email"
+      });
+
+    return res.status(201).json(populatedPost);
+  } catch (error) {
+    return res.status(500).json({ message: "Error adding comment", error: error.message });
+  }
+};
+
+
+// ---------------- ADD REPLY ----------------
+export const addReplyInPost = async (req, res) => {
+  try {
+    const { postId, commentId } = req.body;
+    const { message } = req.body;
+    const userId = req.userId;
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+    comment.replies.push({ author: userId, message });
+    await post.save();
+
+    // ✅ again fetch with populate
+    const populatedPost = await Post.findById(postId)
+      .populate({
+        path: "comments.author",
+        select: "username photoUrl email"
+      })
+      .populate({
+        path: "comments.replies.author",
+        select: "username photoUrl email"
+      });
+
+    return res.status(201).json(populatedPost);
+  } catch (error) {
+    return res.status(500).json({ message: "Error adding reply", error: error.message });
+  }
+};
