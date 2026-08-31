@@ -7,6 +7,7 @@ import {
   getChannel,
   getCurrentUser,
   getHistory,
+  getRecommendedContent,
   getSubscribedContent,
   toggleSubscribe,
   updateChannel,
@@ -41,5 +42,6 @@ userRouter.post("/subscribe", isAuth, toggleSubscribe);
 userRouter.get("/subscribedcontent", isAuth, getSubscribedContent);
 userRouter.post("/addhistory", isAuth, addToHistory);
 userRouter.get("/gethistory", isAuth, getHistory);
+  userRouter.get("/getrecommendation",isAuth,getRecommendedContent)
 
 export default userRouter;
