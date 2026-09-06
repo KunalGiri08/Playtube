@@ -56,6 +56,99 @@ res.status(500).json({message : "Failed to fetch short"});
 };
 
 
+// ---------------- FETCH SINGLE SHORT ----------------
+export const fetchShort = async (req, res) => {
+  try {
+    const { shortId } = req.params;
+
+    const short = await Short.findById(shortId)
+      .populate("channel", "name avatar") // ✅ channel info
+      .populate("likes", "username photoUrl"); // optional: who liked
+
+    if (!short) {
+      return res.status(404).json({ message: "Short not found" });
+    }
+
+    return res.status(200).json({ short });
+  } catch (error) {
+    console.error("Error fetching short:", error);
+    return res.status(500).json({
+      message: "Error fetching short",
+      error: error.message,
+    });
+  }
+};
+
+
+
+// ---------------- UPDATE SHORT ----------------
+export const updateShort = async (req, res) => {
+  try {
+    const { shortId } = req.params;
+    const { title, tags , description } = req.body;
+
+    const short = await Short.findById(shortId);
+    if (!short) {
+      return res.status(404).json({ message: "Short not found" });
+    }
+
+    if (title) short.title = title;
+    if (description) short.description = description;
+
+    if (tags) {
+      try {
+        short.tags = JSON.parse(tags);
+      } catch {
+        short.tags = [];
+      }
+    }
+
+    await short.save();
+
+    return res.status(200).json({
+      message: "Short updated successfully",
+      short,
+    });
+  } catch (error) {
+    console.error("Error updating short:", error);
+    return res
+      .status(500)
+      .json({ message: "Error updating short", error: error.message });
+  }
+};
+
+// ---------------- DELETE SHORT ----------------
+export const deleteShort = async (req, res) => {
+  try {
+    const { shortId } = req.params;
+
+    const short = await Short.findById(shortId);
+    if (!short) {
+      return res.status(404).json({ message: "Short not found" });
+    }
+
+    // remove reference from channel
+    await Channel.findByIdAndUpdate(short.channel, {
+      $pull: { shorts: short._id },
+    });
+
+    await Short.findByIdAndDelete(shortId);
+
+    return res.status(200).json({
+      message: "Short deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting short:", error);
+    return res
+      .status(500)
+      .json({ message: "Error deleting short", error: error.message });
+  }
+};
+
+
+
+
+
 
 // ---------------- LIKE VIDEO ----------------
 export const toggleLikeShort = async (req, res) => {
