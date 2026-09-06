@@ -1,10 +1,10 @@
 import express from "express"
 import isAuth from "../middleware/isAuth.js";
 import upload from "../middleware/multer.js";
-import { addComment, addReply, addView, createVideo, getChannelVideos, getLikedVideos, getSavedVideos, toggleDislikeVideo, toggleLikeVideo, toggleSaveVideo } from "../controller/videoController.js";
-import { addCommentforShort, addReplyforShort, addViewforShort, createShort, getAllShorts, getLikedShorts, getSavedShorts, toggleDislikeShort, toggleLikeShort, toggleSaveShort } from "../controller/shortController.js";
-import { createPlaylist, getSavedPlaylists, toggleSavePlaylist } from "../controller/playlistController.js";
-import { addCommentInPost, addReplyInPost, createPost, getAllPosts, toggleLikePost } from "../controller/postController.js";
+import { addComment, addReply, addView, createVideo, deleteVideo, fetchVideo, getAllVideos, getChannelVideos, getLikedVideos, getSavedVideos, toggleDislikeVideo, toggleLikeVideo, toggleSaveVideo, updateVideo } from "../controller/videoController.js";
+import { addCommentforShort, addReplyforShort, addViewforShort, createShort, deleteShort, fetchShort, getAllShorts, getLikedShorts, getSavedShorts, toggleDislikeShort, toggleLikeShort, toggleSaveShort, updateShort } from "../controller/shortController.js";
+import { createPlaylist, deletePlaylist, fetchPlaylist, getSavedPlaylists, toggleSavePlaylist, updatePlaylist } from "../controller/playlistController.js";
+import { addCommentInPost, addReplyInPost, createPost, deletePost, getAllPosts, toggleLikePost } from "../controller/postController.js";
 import { filterCategoryWithAi, searchWithAi } from "../controller/aiController.js";
 
 const contentRouter = express.Router()
@@ -14,8 +14,10 @@ contentRouter.post("/upload-video", isAuth, upload.fields([
   { name: "video", maxCount: 1 },
   { name: "thumbnail", maxCount: 1 }
 ]), createVideo);
-
+// Get channel videos
 contentRouter.post("/get-videos", isAuth, getChannelVideos);
+// Get all videos
+contentRouter.get("/allvideos", getAllVideos)
 // 👍 Like video
 contentRouter.put("/video/:videoId/toggle-like", isAuth, toggleLikeVideo);
 
@@ -24,6 +26,13 @@ contentRouter.put("/video/:videoId/toggle-dislike", isAuth, toggleDislikeVideo);
 
 // 💾 Save / Unsave video
 contentRouter.put("/video/:videoId/toggle-save", isAuth, toggleSaveVideo);
+// 👁️ Fetch video
+contentRouter.get("/fetch-video/:videoId", isAuth, fetchVideo);
+// 👁️ Update video
+contentRouter.put("/update-video/:videoId",isAuth,upload.single("thumbnail"),updateVideo);
+// 🗑️ Delete video
+contentRouter.delete("/delete-video/:videoId",isAuth,deleteVideo);
+
 // 👁️ Add view
 contentRouter.put("/video/:videoId/add-view", addView);
 
@@ -41,8 +50,17 @@ contentRouter.get("/savevideos",isAuth, getSavedVideos)
 
 
 //for shortController
+// Upload short
 contentRouter.post("/upload-short", isAuth, upload.single("short"), createShort)
+// Get all shorts
 contentRouter.get("/allshorts", getAllShorts)
+// Get channel shorts
+contentRouter.put("/update-short/:shortId",isAuth,updateShort);
+// 🗑️ Delete short
+contentRouter.delete("/delete-short/:shortId",isAuth,deleteShort);
+// 👁️ Fetch short
+contentRouter.get("/fetch-short/:shortId", isAuth, fetchShort);
+
 
 // 👁️ Add view
 contentRouter.put("/short/:shortId/add-view",isAuth, addViewforShort);
