@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import create from "../assets/create.png"
+import create from "../../assets/create.png"
 import { useNavigate } from 'react-router-dom'
 
 function ViewChannel() {

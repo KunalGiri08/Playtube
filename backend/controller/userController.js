@@ -1,5 +1,7 @@
 import User from "../model/userModel.js";
 import Channel from "../model/channelModel.js";
+import Video from "../model/videoModel.js";
+import Short from "../model/shortModel.js";
 import uploadOnCloudinary from "../config/cloudinary.js";
 
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, } from 'react-redux'
-import { setChannelData } from '../redux/userSlice'
+import { setChannelData, setAllChannelData } from '../redux/userSlice'
 import axios from 'axios'
 import { serverUrl } from '../App'
 

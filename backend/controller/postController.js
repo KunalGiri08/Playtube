@@ -1,6 +1,6 @@
 import Channel from "../model/channelModel.js";
 import uploadOnCloudinary from "../config/cloudinary.js";
-import Post from "../model/PostModel.js";
+import Post from "../model/postModel.js";
 
 
 

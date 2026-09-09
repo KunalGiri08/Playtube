@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/playtube1.png";
 
@@ -6,17 +6,38 @@ import {
   FaBars,
   FaUserCircle,
   FaHome,
+  FaHistory,
+  FaList,
+  FaThumbsUp,
   FaSearch,
+  FaMicrophone,
+  FaTimes,
 } from "react-icons/fa";
 
+import { IoIosAddCircle } from "react-icons/io";
+import { GoVideo } from "react-icons/go";
 import { SiYoutubeshorts } from "react-icons/si";
+import { MdOutlineSubscriptions } from "react-icons/md";
+
+import Profile from "../component/Profile";
+import { useSelector } from "react-redux";
+import AllVideosPage from "../component/AllVideosPage";
+import ShortsPage from "../component/AllShortsPage";
 
 function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedItem, setSelectedItem] = useState("Home");
+  const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [popUp, setPopUp] = useState(false);
+  const [listening, setListening] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { userData, subscribeChannel } = useSelector(
+    (state) => state.user
+  );
 
   const categories = [
     "Music",
@@ -32,46 +53,165 @@ function Home() {
     "Fashion",
     "Cooking",
     "Sports",
+    "Pets",
+    "Art",
     "Comedy",
     "Vlogs",
   ];
 
+  // Voice recognition
+  const recognitionRef = useRef(null);
+
+  if (
+    !recognitionRef.current &&
+    (window.SpeechRecognition || window.webkitSpeechRecognition)
+  ) {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = "en-US";
+  }
+
+  const handleVoiceSearch = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in your browser.");
+      return;
+    }
+
+    if (listening) {
+      recognitionRef.current.stop();
+      setListening(false);
+      return;
+    }
+
+    setListening(true);
+    recognitionRef.current.start();
+
+    recognitionRef.current.onresult = (event) => {
+      const transcript =
+        event.results[0][0].transcript.trim();
+
+      setInput(transcript);
+      setListening(false);
+    };
+
+    recognitionRef.current.onerror = (error) => {
+      console.error("Speech recognition error:", error);
+      setListening(false);
+    };
+
+    recognitionRef.current.onend = () => {
+      setListening(false);
+    };
+  };
+
   const handleSearch = () => {
     if (!input.trim()) return;
 
-    console.log("Searching:", input);
+    console.log("Search:", input);
 
-    // Search API will be added later
-    setInput("");
+    // Search API/component can be added later.
+    setPopUp(false);
+  };
+
+  const handleCategory = (category) => {
+    console.log("Selected category:", category);
+
+    // Category filtering can be added later.
   };
 
   return (
-    <div className="bg-[#0f0f0f] text-white min-h-screen">
+    <div className="bg-[#0f0f0f] text-white min-h-screen relative">
 
-      {/* ================= NAVBAR ================= */}
+      {/* VOICE SEARCH POPUP */}
+      {popUp && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
-      <header className="h-[60px] bg-[#0f0f0f] border-b border-gray-800 fixed top-0 left-0 right-0 z-50 px-4">
-        <div className="h-full flex items-center justify-between">
+          <div className="bg-[#1f1f1f] rounded-2xl shadow-2xl w-[90%] max-w-md min-h-[400px] p-8 flex flex-col items-center justify-between gap-8 relative border border-gray-700">
 
-          {/* Left Side */}
-          <div className="flex items-center gap-4">
-
-            {/* Menu Button */}
             <button
-              onClick={() => setSidebarOpen((prev) => !prev)}
-              className="hidden md:flex bg-[#272727] p-2 rounded-full hover:bg-gray-700"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setPopUp(false)}
             >
-              <FaBars className="text-xl" />
+              <FaTimes size={22} />
             </button>
 
-            {/* Logo */}
+            <div className="flex flex-col items-center gap-3 w-full">
+
+              {listening ? (
+                <h1 className="text-xl font-semibold text-red-400">
+                  Listening...
+                </h1>
+              ) : (
+                <h1 className="text-lg font-medium text-gray-300">
+                  Speak or type your query
+                </h1>
+              )}
+
+              {input && (
+                <span className="text-center text-lg text-gray-200 px-4 py-2 rounded-lg bg-[#2a2a2a]">
+                  {input}
+                </span>
+              )}
+
+              <div className="flex w-full gap-2 mt-4">
+                <input
+                  type="text"
+                  placeholder="Type your search..."
+                  className="flex-1 px-4 py-2 rounded-full bg-[#2a2a2a] text-white outline-none border border-gray-600"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                />
+
+                <button
+                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full"
+                  onClick={handleSearch}
+                >
+                  <FaSearch />
+                </button>
+              </div>
+            </div>
+
+            <button
+              className={`p-6 rounded-full shadow-xl ${
+                listening
+                  ? "bg-red-600 animate-pulse"
+                  : "bg-[#272727] hover:bg-[#3f3f3f]"
+              }`}
+              onClick={handleVoiceSearch}
+            >
+              <FaMicrophone className="w-8 h-8" />
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* NAVBAR */}
+      <header className="bg-[#0f0f0f] h-[60px] p-3 border-b border-gray-800 fixed top-0 left-0 right-0 z-50">
+
+        <div className="flex items-center justify-between">
+
+          {/* LEFT */}
+          <div className="flex items-center gap-4">
+
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="text-xl bg-[#272727] p-2 rounded-full md:inline hidden"
+            >
+              <FaBars />
+            </button>
+
             <div
+              className="flex items-center gap-[5px] cursor-pointer"
               onClick={() => navigate("/")}
-              className="flex items-center gap-2 cursor-pointer"
             >
               <img
                 src={logo}
-                alt="PlayTube"
+                alt="PlayTube Logo"
                 className="w-[30px]"
               />
 
@@ -82,132 +222,244 @@ function Home() {
 
           </div>
 
+          {/* SEARCH */}
+          <div className="hidden md:flex items-center gap-2 flex-1 max-w-xl">
 
-          {/* ================= SEARCH ================= */}
+            <div className="flex flex-1">
 
-          <div className="hidden md:flex items-center flex-1 max-w-xl mx-5">
+              <input
+                type="text"
+                placeholder="Search"
+                className="flex-1 bg-[#121212] px-4 py-2 rounded-l-full outline-none border border-gray-700"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+              />
 
-            <input
-              type="text"
-              placeholder="Search"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-              className="flex-1 bg-[#121212] px-4 py-2 rounded-l-full outline-none border border-gray-700"
-            />
+              <button
+                className="bg-[#272727] px-4 rounded-r-full border border-gray-700"
+                onClick={handleSearch}
+              >
+                <FaSearch />
+              </button>
+
+            </div>
 
             <button
-              onClick={handleSearch}
-              className="bg-[#272727] px-5 py-[11px] rounded-r-full border border-gray-700 hover:bg-gray-700"
+              className="bg-[#272727] p-3 rounded-full"
+              onClick={() => setPopUp(true)}
             >
-              <FaSearch />
+              <FaMicrophone />
             </button>
 
           </div>
 
+          {/* RIGHT */}
+          <div className="flex items-center gap-3">
 
-          {/* ================= SIGN IN ================= */}
+            {userData?.channel && (
+              <button
+                className="hidden md:flex items-center gap-1 bg-[#272727] px-3 py-1 rounded-full"
+                onClick={() => navigate("/createpage")}
+              >
+                <span className="text-lg">+</span>
+                <span>Create</span>
+              </button>
+            )}
 
-          <button
-            onClick={() => navigate("/signin")}
-            className="flex items-center gap-2 border border-gray-600 px-4 py-2 rounded-full hover:bg-[#272727]"
-          >
-            <FaUserCircle className="text-xl" />
+            {!userData?.photoUrl ? (
+              <FaUserCircle
+                className="text-3xl hidden md:flex text-gray-400 cursor-pointer"
+                onClick={() => setOpen((prev) => !prev)}
+              />
+            ) : (
+              <img
+                src={userData.photoUrl}
+                alt="Profile"
+                className="w-9 h-9 rounded-full object-cover border border-gray-700 hidden md:flex cursor-pointer"
+                onClick={() => setOpen((prev) => !prev)}
+              />
+            )}
 
-            <span className="hidden sm:block">
-              Sign In
-            </span>
-          </button>
+            <FaSearch
+              className="text-lg md:hidden cursor-pointer"
+              onClick={() => setPopUp(true)}
+            />
+
+          </div>
 
         </div>
       </header>
 
-
-      {/* ================= SIDEBAR ================= */}
-
+      {/* SIDEBAR */}
       <aside
-        className={`
-          fixed
-          top-[60px]
-          bottom-0
-          left-0
-          bg-[#0f0f0f]
-          border-r
-          border-gray-800
-          hidden
-          md:flex
-          flex-col
-          z-40
-          transition-all
-          duration-300
-          ${sidebarOpen ? "w-60" : "w-20"}
-        `}
+        className={`bg-[#0f0f0f] border-r border-gray-800 transition-all duration-300 fixed top-[60px] bottom-0 z-40 ${
+          sidebarOpen ? "w-60" : "w-20"
+        } hidden md:flex flex-col overflow-y-auto`}
       >
 
-        {/* HOME */}
+        <nav className="space-y-1 mt-3">
 
-        <SidebarItem
-          icon={<FaHome />}
-          text="Home"
-          open={sidebarOpen}
-          active={location.pathname === "/"}
-          onClick={() => navigate("/")}
-        />
+          <SidebarItem
+            icon={<FaHome />}
+            text="Home"
+            open={sidebarOpen}
+            selected={selectedItem === "Home"}
+            onClick={() => {
+              setSelectedItem("Home");
+              navigate("/");
+            }}
+          />
 
+          <SidebarItem
+            icon={<SiYoutubeshorts />}
+            text="Shorts"
+            open={sidebarOpen}
+            selected={selectedItem === "Shorts"}
+            onClick={() => {
+              setSelectedItem("Shorts");
+              navigate("/shorts");
+            }}
+          />
 
-        {/* SHORTS */}
+          <SidebarItem
+            icon={<MdOutlineSubscriptions />}
+            text="Subscriptions"
+            open={sidebarOpen}
+            selected={selectedItem === "Subscriptions"}
+            onClick={() => {
+              setSelectedItem("Subscriptions");
+              navigate("/subscribepage");
+            }}
+          />
 
-        <SidebarItem
-          icon={<SiYoutubeshorts />}
-          text="Shorts"
-          open={sidebarOpen}
-          active={location.pathname === "/shorts"}
-          onClick={() => navigate("/shorts")}
-        />
+        </nav>
+
+        <hr className="border-gray-800 my-3" />
+
+        {sidebarOpen && (
+          <p className="text-sm text-gray-400 px-2">
+            You
+          </p>
+        )}
+
+        <nav className="space-y-1 mt-1">
+
+          <SidebarItem
+            icon={<FaHistory />}
+            text="History"
+            open={sidebarOpen}
+            selected={selectedItem === "History"}
+            onClick={() => {
+              setSelectedItem("History");
+              navigate("/history");
+            }}
+          />
+
+          <SidebarItem
+            icon={<FaList />}
+            text="Playlists"
+            open={sidebarOpen}
+            selected={selectedItem === "Playlists"}
+            onClick={() => {
+              setSelectedItem("Playlists");
+              navigate("/saveplaylist");
+            }}
+          />
+
+          <SidebarItem
+            icon={<GoVideo />}
+            text="Save videos"
+            open={sidebarOpen}
+            selected={selectedItem === "Save videos"}
+            onClick={() => {
+              setSelectedItem("Save videos");
+              navigate("/savevideos");
+            }}
+          />
+
+          <SidebarItem
+            icon={<FaThumbsUp />}
+            text="Liked videos"
+            open={sidebarOpen}
+            selected={selectedItem === "Liked videos"}
+            onClick={() => {
+              setSelectedItem("Liked videos");
+              navigate("/likedvideos");
+            }}
+          />
+
+        </nav>
+
+        <hr className="border-gray-800 my-3" />
+
+        {sidebarOpen && (
+          <p className="text-sm text-gray-400 px-2">
+            Subscriptions
+          </p>
+        )}
+
+        <nav className="space-y-1 mt-1">
+
+          {subscribeChannel?.map((item) => (
+            <button
+              key={item._id}
+              onClick={() => {
+                setSelectedItem(item._id);
+                navigate(`/channelpage/${item._id}`);
+              }}
+              className={`flex items-center ${
+                sidebarOpen
+                  ? "gap-3 justify-start"
+                  : "justify-center"
+              } w-full text-left p-2 rounded-lg transition ${
+                selectedItem === item._id
+                  ? "bg-[#272727]"
+                  : "hover:bg-gray-800"
+              }`}
+            >
+
+              <img
+                src={item.avatar}
+                alt={item.name}
+                className="w-6 h-6 rounded-full border border-gray-700 object-cover"
+              />
+
+              {sidebarOpen && (
+                <span className="text-sm truncate">
+                  {item.name}
+                </span>
+              )}
+
+            </button>
+          ))}
+
+        </nav>
 
       </aside>
 
-
-      {/* ================= MAIN CONTENT ================= */}
-
+      {/* MAIN CONTENT */}
       <main
-        className={`
-          pt-[60px]
-          pb-[65px]
-          min-h-screen
-          transition-all
-          duration-300
-          ${sidebarOpen ? "md:ml-60" : "md:ml-20"}
-        `}
+        className={`overflow-y-auto p-4 flex flex-col pb-16 transition-all duration-300 ${
+          sidebarOpen ? "md:ml-60" : "md:ml-20"
+        }`}
       >
 
-        {/* 
-            Only show this content when URL is "/"
-        */}
-
         {location.pathname === "/" && (
-          <div className="p-4">
+          <>
 
-            {/* Categories */}
-
-            <div className="flex gap-3 overflow-x-auto py-3">
+            {/* CATEGORIES */}
+            <div className="flex items-center gap-3 overflow-x-auto pt-2 mt-[60px]">
 
               {categories.map((category) => (
                 <button
                   key={category}
-                  className="
-                    whitespace-nowrap
-                    bg-[#272727]
-                    px-4
-                    py-2
-                    rounded-lg
-                    text-sm
-                    hover:bg-gray-700
-                  "
+                  className="whitespace-nowrap bg-[#272727] px-4 py-1 rounded-lg text-sm hover:bg-gray-700"
+                  onClick={() => handleCategory(category)}
                 >
                   {category}
                 </button>
@@ -215,67 +467,68 @@ function Home() {
 
             </div>
 
+            {/* HOME CONTENT */}
+            <div className="mt-6">
 
-            {/* Temporary Home Content */}
+              <AllVideosPage />
 
-            <div className="mt-10 text-center">
-
-              <h1 className="text-3xl font-bold">
-                Welcome to PlayTube
-              </h1>
-
-              <p className="text-gray-400 mt-3">
-                Videos will appear here soon.
-              </p>
+              <ShortsPage />
 
             </div>
 
-          </div>
+          </>
         )}
 
+        {open && <Profile />}
 
-        {/* 
-            IMPORTANT
-
-            /shorts → Short.jsx will appear HERE
-        */}
-
-        <Outlet />
+        <div className="mt-4">
+          <Outlet />
+        </div>
 
       </main>
 
-
-      {/* ================= MOBILE BOTTOM NAV ================= */}
-
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[65px] bg-[#0f0f0f] border-t border-gray-800 flex items-center justify-around z-50">
-
-        {/* Home */}
+      {/* MOBILE BOTTOM NAV */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0f0f0f] border-t border-gray-800 flex justify-around py-2 z-10">
 
         <MobileNavItem
+          onClick={() => navigate("/")}
           icon={<FaHome />}
           text="Home"
-          active={location.pathname === "/"}
-          onClick={() => navigate("/")}
         />
 
-
-        {/* Shorts */}
-
         <MobileNavItem
+          onClick={() => navigate("/shorts")}
           icon={<SiYoutubeshorts />}
           text="Shorts"
-          active={location.pathname === "/shorts"}
-          onClick={() => navigate("/shorts")}
         />
 
-
-        {/* User */}
+        <MobileNavItem
+          onClick={() => navigate("/createpage")}
+          icon={
+            <IoIosAddCircle className="text-4xl w-9 h-9" />
+          }
+        />
 
         <MobileNavItem
-          icon={<FaUserCircle />}
+          onClick={() => navigate("/subscribepage")}
+          icon={<MdOutlineSubscriptions />}
+          text="Subscriptions"
+        />
+
+        <MobileNavItem
+          onClick={() => navigate("/mobileprofile")}
+          icon={
+            !userData?.photoUrl ? (
+              <FaUserCircle />
+            ) : (
+              <img
+                src={userData.photoUrl}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover border border-gray-700"
+              />
+            )
+          }
           text="You"
-          active={location.pathname === "/signin"}
-          onClick={() => navigate("/signin")}
         />
 
       </nav>
@@ -284,89 +537,57 @@ function Home() {
   );
 }
 
-
-/* =====================================================
-   SIDEBAR ITEM
-===================================================== */
-
 function SidebarItem({
   icon,
   text,
   open,
-  active,
+  selected,
   onClick,
 }) {
   return (
     <button
       onClick={onClick}
-      className={`
-        flex
-        items-center
-        gap-4
-        p-3
-        mx-2
-        mt-2
-        rounded-lg
-        transition
-        ${open ? "justify-start" : "justify-center"}
-        ${
-          active
-            ? "bg-[#272727]"
-            : "hover:bg-[#272727]"
-        }
-      `}
+      className={`flex items-center gap-4 p-2 rounded w-full transition-colors ${
+        open ? "justify-start" : "justify-center"
+      } ${
+        selected
+          ? "bg-[#272727]"
+          : "hover:bg-[#272727]"
+      }`}
     >
-
-      <span className="text-xl">
-        {icon}
-      </span>
+      <span className="text-lg">{icon}</span>
 
       {open && (
-        <span className="text-sm">
-          {text}
-        </span>
+        <span className="text-sm">{text}</span>
       )}
-
     </button>
   );
 }
-
-
-/* =====================================================
-   MOBILE NAV ITEM
-===================================================== */
 
 function MobileNavItem({
   icon,
   text,
-  active,
   onClick,
+  active,
 }) {
   return (
     <button
       onClick={onClick}
-      className={`
-        flex
-        flex-col
-        items-center
-        justify-center
-        gap-1
-        px-4
-        ${active ? "text-white" : "text-gray-400"}
-      `}
+      className={`flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-lg ${
+        active ? "text-white" : "text-gray-400"
+      }`}
     >
-
-      <span className="text-xl">
+      <span className="text-xl sm:text-2xl">
         {icon}
       </span>
 
-      <span className="text-[11px]">
-        {text}
-      </span>
-
+      {text && (
+        <span className="text-[10px] sm:text-xs">
+          {text}
+        </span>
+      )}
     </button>
   );
 }
-
 
 export default Home;

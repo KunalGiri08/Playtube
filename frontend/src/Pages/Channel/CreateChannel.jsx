@@ -5,9 +5,9 @@ import logo from "../../assets/youtube.png"; // PlayTube logo
 import {  useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { serverUrl } from "../App";
+import { serverUrl } from "../../App";
 import { ClipLoader } from "react-spinners";
-import { setChannelData } from "../redux/userSlice";
+import { setChannelData } from "../../redux/userSlice";
 import { showCustomAlert } from "../../component/CustomAlert";
 
 const CreateChannelFlow = () => {

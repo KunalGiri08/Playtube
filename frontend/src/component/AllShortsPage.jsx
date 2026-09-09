@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import ShortsCard from "./ShortsCard";
+import ShortsCard from "./ShortCard";
 import { SiYoutubeshorts } from "react-icons/si";
 
 const ShortsPage = () => {
