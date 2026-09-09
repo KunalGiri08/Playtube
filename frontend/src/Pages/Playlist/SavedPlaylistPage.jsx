@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { serverUrl } from "../App"; 
-import PlaylistCard from "../component/PlaylistCard";
+import { serverUrl } from "../../App"; 
+import PlaylistCard from "../../component/PlaylistCard";
 import { useSelector } from "react-redux";
 
 export default function SavedPlaylistPage() {

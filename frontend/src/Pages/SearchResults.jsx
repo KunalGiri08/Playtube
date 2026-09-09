@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import VideoCard from "../component/VideoCard";
-import ShortsCard from "../component/ShortsCard";
+import ShortsCard from "../component/ShortCard";
 import PlaylistCard from "../component/PlaylistCard";
 import ChannelCard from "../component/ChannelCard"; 
 

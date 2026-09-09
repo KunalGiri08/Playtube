@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { FaImage } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
 import { useSelector, useDispatch } from "react-redux";
-import { serverUrl } from "../App";
-import { showCustomAlert } from "../component/CustomAlert";
+import { serverUrl } from "../../App";
+import { showCustomAlert } from "../../component/CustomAlert";
 import axios from "axios";
-import { setChannelData } from "../redux/userSlice";
+import { setChannelData } from "../../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 
 const CreatePost = () => {

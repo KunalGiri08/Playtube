@@ -6,11 +6,11 @@ import {
   FaExpand, FaThumbsUp, FaThumbsDown, FaDownload, FaBookmark,
 } from "react-icons/fa";
 import { SiYoutubeshorts } from "react-icons/si";
-import { serverUrl } from "../App";
+import { serverUrl } from "../../App";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
-import Description from "../component/Description";
-import ShortsCard from "../component/ShortsCard";
+import Description from "../../component/Description";
+import ShortsCard from "../../component/ShortCard";
 
 const IconButton = ({ icon: Icon, active, label, count, onClick }) => (
   <button onClick={onClick} className="flex flex-col items-center">

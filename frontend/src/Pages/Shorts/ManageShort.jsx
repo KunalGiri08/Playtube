@@ -4,10 +4,10 @@ import { ClipLoader } from "react-spinners";
 import { FaTrash, FaSave } from "react-icons/fa";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
-import { serverUrl } from "../App";
-import { showCustomAlert } from "../component/CustomAlert";
-import { setAllShortData } from "../redux/contentSlice";
-import { setChannelData } from "../redux/userSlice";
+import { serverUrl } from "../../App";
+import { showCustomAlert } from "../../component/CustomAlert";
+import { setAllShortData } from "../../redux/contentSlice";
+import { setChannelData } from "../../redux/userSlice";
 
 const ManageShort = () => {
   const { shortId } = useParams();

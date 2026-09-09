@@ -3,9 +3,9 @@ import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-import { serverUrl } from "../App";
-import { showCustomAlert } from "../component/CustomAlert";
-import { setChannelData } from "../redux/userSlice";
+import { serverUrl } from "../../App";
+import { showCustomAlert } from "../../component/CustomAlert";
+import { setChannelData } from "../../redux/userSlice";
 
 const CreatePlaylist = () => {
   const navigate = useNavigate();

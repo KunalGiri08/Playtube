@@ -5,10 +5,10 @@ import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-import { serverUrl } from "../App";
-import { showCustomAlert } from "../component/CustomAlert";
-import { setChannelData } from "../redux/userSlice";
-import { setAllVideoData } from "../redux/contentSlice";
+import { serverUrl } from "../../App";
+import { showCustomAlert } from "../../component/CustomAlert";
+import { setChannelData } from "../../redux/userSlice";
+import { setAllVideoData } from "../../redux/contentSlice";
 
 
 const CreateVideo = () => {

@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
 import { MdDelete, MdSaveAlt } from "react-icons/md";
-import { serverUrl } from "../App";
-import { showCustomAlert } from "../component/CustomAlert";
-import { setAllVideoData } from "../redux/contentSlice";
+import { serverUrl } from "../../App";
+import { showCustomAlert } from "../../component/CustomAlert";
+import { setAllVideoData } from "../../redux/contentSlice";
 
 const ManageVideo = () => {
   const { videoId } = useParams();

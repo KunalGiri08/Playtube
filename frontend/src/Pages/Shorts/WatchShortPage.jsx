@@ -12,9 +12,9 @@ import {
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { serverUrl } from "../App";
+import { serverUrl } from "../../App";
 import { ClipLoader } from "react-spinners";
-import Description from "../component/Description";
+import Description from "../../component/Description";
 
 const WatchShortPage = () => {
   const { shortId } = useParams();

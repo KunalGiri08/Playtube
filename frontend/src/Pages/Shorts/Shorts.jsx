@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { serverUrl } from "../App";
+import { serverUrl } from "../../App";
 import { ClipLoader } from "react-spinners";
 
 const Shorts = () => {

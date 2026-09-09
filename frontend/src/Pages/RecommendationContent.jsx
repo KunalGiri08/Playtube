@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import VideoCard from "../component/VideoCard";
-import ShortsCard from "../component/ShortsCard";
+import ShortsCard from "../component/ShortCard";
 import { SiYoutubeshorts } from "react-icons/si";
 // ✅ Helper function to get duration
 const getVideoDuration = (url, callback) => {

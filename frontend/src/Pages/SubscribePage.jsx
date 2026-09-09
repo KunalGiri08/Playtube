@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { SiYoutubeshorts } from "react-icons/si";
 import VideoCard from "../component/VideoCard";
-import ShortsCard from "../component/ShortsCard";
+import ShortsCard from "../component/ShortCard";
 import logo from "../assets/playtube1.png";
 import { useNavigate } from "react-router-dom";
 
