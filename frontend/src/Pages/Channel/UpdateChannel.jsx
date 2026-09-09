@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import logo from "../../assets/youtube.png"; // PlayTube logo
@@ -8,7 +8,7 @@ import { showCustomAlert } from "../../component/CustomAlert";
 import axios from "axios";
 import { serverUrl } from "../../App";
 import { ClipLoader } from "react-spinners";
-import { setChannelData } from "../../redux/userSlice";
+import { setChannelData, setUserData } from "../../redux/userSlice";
 
 function UpdateChannel() {
    const [step, setStep] = useState(1);
@@ -25,6 +25,13 @@ function UpdateChannel() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   
+  useEffect(() => {
+    if (channelData) {
+      if (!channelName && channelData.name) setChannelName(channelData.name);
+      if (!description && channelData.description) setDescription(channelData.description);
+      if (!category && channelData.category) setCategory(channelData.category);
+    }
+  }, [channelData]);
 
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => prev - 1);
@@ -36,22 +43,28 @@ function UpdateChannel() {
   const handleUpdateChannel = async () => {
     const formData = new FormData()
     formData.append("name",channelName);
-    formData.append("avatar",avatar);
+    if (avatar) {
+      formData.append("avatar",avatar);
+    }
     formData.append("description",description);
     formData.append("category",category);
-    formData.append("bannerImage",banner);
+    if (banner) {
+      formData.append("bannerImage",banner);
+    }
     setLoading(true)
     try {
       const result = await axios.post(serverUrl + "/api/user/update-channel" ,formData , {withCredentials:true})
-      console.log(result)
       showCustomAlert("Channel Updated")
       dispatch(setChannelData(result.data))
-      navigate("/")
+      if (result.data?.avatar && userData) {
+        dispatch(setUserData({ ...userData, photoUrl: result.data.avatar }));
+      }
+      navigate("/viewchannel")
       setLoading(false)
       
     } catch (error) {
       console.log(error)
-      showCustomAlert(error.response.data.message)
+      showCustomAlert(error.response?.data?.message || "Failed to update channel")
       setLoading(false)
     }
     
@@ -81,6 +94,12 @@ function UpdateChannel() {
                   {avatar ? (
                     <img
                       src={URL.createObjectURL(avatar)}
+                      alt="avatar"
+                      className="w-20 h-20 rounded-2xl object-cover border-2 border-gray-600"
+                    />
+                  ) : channelData?.avatar ? (
+                    <img
+                      src={channelData.avatar}
                       alt="avatar"
                       className="w-20 h-20 rounded-2xl object-cover border-2 border-gray-600"
                     />
@@ -135,6 +154,12 @@ function UpdateChannel() {
                     alt="avatar"
                     className="w-20 h-20 rounded-2xl object-cover border-2 border-gray-600"
                   />
+                ) : channelData?.avatar ? (
+                  <img
+                    src={channelData.avatar}
+                    alt="avatar"
+                    className="w-20 h-20 rounded-2xl object-cover border-2 border-gray-600"
+                  />
                 ) : (
                   <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center text-gray-400">
                     <FaUserCircle size={40} />
@@ -176,6 +201,12 @@ function UpdateChannel() {
                 {banner ? (
                   <img
                     src={URL.createObjectURL(banner)}
+                    alt="banner"
+                    className="w-full h-32 object-cover rounded-lg mb-2 border border-gray-700"
+                  />
+                ) : channelData?.bannerImage ? (
+                  <img
+                    src={channelData.bannerImage}
                     alt="banner"
                     className="w-full h-32 object-cover rounded-lg mb-2 border border-gray-700"
                   />

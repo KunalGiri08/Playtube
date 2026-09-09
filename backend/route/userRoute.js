@@ -19,7 +19,7 @@ const userRouter = express.Router();
 userRouter.get("/getcurrentuser", isAuth, getCurrentUser);
 
 userRouter.post(
-  "/createchannel",
+  ["/createchannel", "/create-channel"],
   isAuth,
   upload.fields([
     { name: "avatar", maxCount: 1 },
@@ -29,7 +29,7 @@ userRouter.post(
 );
 userRouter.get("/getchannel", isAuth, getChannel);
 userRouter.post(
-  "/updatechannel",
+  ["/updatechannel", "/update-channel"],
   isAuth,
   upload.fields([
     { name: "avatar", maxCount: 1 },

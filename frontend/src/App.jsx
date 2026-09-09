@@ -34,6 +34,8 @@ import RevenuePage from "./component/RevenuePage";
 import ManageVideo from "./Pages/Videos/ManageVideo";
 import ManageShort from "./Pages/Shorts/ManageShort";
 import ManagePlaylist from "./Pages/Playlist/ManagePlaylist";
+import CreatePage from "./Pages/CreatePage";
+import WatchVideoPage from "./Pages/Videos/WatchVideoPage";
 export const serverUrl = "http://localhost:8000";
 
 const ProtectedRoute = ({ userData, children }) => {
@@ -80,6 +82,14 @@ function App() {
             element={
               <ProtectedRoute userData={userData}>
                 <UpdateChannel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/createpage"
+            element={
+              <ProtectedRoute userData={userData}>
+                <CreatePage />
               </ProtectedRoute>
             }
           />
@@ -175,23 +185,24 @@ function App() {
 
           <Route path="/mobilepro" element={<MobileProfile />} />
         </Route>
-         {/* Routes outside Home */}
+        {/* Routes outside Home */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgetpassword" element={<ForgetPassword />} />
         <Route path="/createchannel" element={<CreateChannel />} />
+        <Route path='/watch-video/:videoId' element={<ProtectedRoute userData={userData}><WatchVideoPage /></ProtectedRoute>} />
 
 
 
-          <Route path='/ptstudio' element={<ProtectedRoute userData={userData}><PTStudio /></ProtectedRoute>} >
-   <Route path='/ptstudio/dashboard' element={<ProtectedRoute userData={userData}><Dashboard/></ProtectedRoute>} />
-   <Route path='/ptstudio/content' element={<ProtectedRoute userData={userData}><ContentPage/></ProtectedRoute>} />
-   <Route path='/ptstudio/analytics' element={<ProtectedRoute userData={userData}><AnalyticsPage/></ProtectedRoute>} />
-   <Route path='/ptstudio/revenue' element={<ProtectedRoute userData={userData}><RevenuePage/></ProtectedRoute>} />
-   <Route path='/ptstudio/managevideo/:videoId' element={<ProtectedRoute userData={userData}><ManageVideo/></ProtectedRoute>} />
-   <Route path='/ptstudio/manageshort/:shortId' element={<ProtectedRoute userData={userData}><ManageShort/></ProtectedRoute>} />
-   <Route path='/ptstudio/manageplaylist/:playlistId' element={<ProtectedRoute userData={userData}><ManagePlaylist/></ProtectedRoute>} />
-    </Route>
+        <Route path='/ptstudio' element={<ProtectedRoute userData={userData}><PTStudio /></ProtectedRoute>} >
+          <Route path='/ptstudio/dashboard' element={<ProtectedRoute userData={userData}><Dashboard /></ProtectedRoute>} />
+          <Route path='/ptstudio/content' element={<ProtectedRoute userData={userData}><ContentPage /></ProtectedRoute>} />
+          <Route path='/ptstudio/analytics' element={<ProtectedRoute userData={userData}><AnalyticsPage /></ProtectedRoute>} />
+          <Route path='/ptstudio/revenue' element={<ProtectedRoute userData={userData}><RevenuePage /></ProtectedRoute>} />
+          <Route path='/ptstudio/managevideo/:videoId' element={<ProtectedRoute userData={userData}><ManageVideo /></ProtectedRoute>} />
+          <Route path='/ptstudio/manageshort/:shortId' element={<ProtectedRoute userData={userData}><ManageShort /></ProtectedRoute>} />
+          <Route path='/ptstudio/manageplaylist/:playlistId' element={<ProtectedRoute userData={userData}><ManagePlaylist /></ProtectedRoute>} />
+        </Route>
       </Routes>
     </>
   );

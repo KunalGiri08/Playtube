@@ -125,18 +125,18 @@ export const updateChannel = async (req, res) => {
     if (category !== undefined) channel.category = category;
 
     // Handle file uploads (avatar & bannerImage)
-    if (req.files?.avatar) {
+    if (req.files?.avatar && req.files.avatar[0]) {
       const avatar = await uploadOnCloudinary(req.files.avatar[0].path);
       channel.avatar = avatar;
     }
-    if (req.files?.bannerImage) {
+    if (req.files?.bannerImage && req.files.bannerImage[0]) {
       const bannerImage = await uploadOnCloudinary(req.files.bannerImage[0].path);
       channel.bannerImage = bannerImage;
     }
 
     // Save updated channel
     const updatedChannel = await channel.save();
-
+    await updatedChannel.populate("owner");
 
     // Optionally update user's username & photo if channel name/avatar changes
     await User.findByIdAndUpdate(userId, {

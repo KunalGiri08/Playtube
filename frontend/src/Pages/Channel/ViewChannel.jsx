@@ -27,14 +27,18 @@ function ViewChannel() {
         {/* Avatar + Info */}
         <div className="flex flex-col items-center">
           <img
-            src={channelData?.avatar || "/default-avatar.png"}
+            src={channelData?.avatar || userData?.photoUrl || "/default-avatar.png"}
             alt="Channel Avatar"
-            className="w-28 h-28 rounded-full object-cover -mt-14 border-4 border-gray-500"
+            className="w-28 h-28 rounded-full object-cover -mt-14 border-4 border-gray-500 bg-gray-700"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/default-avatar.png";
+            }}
           />
           <h1 className="text-2xl font-bold mt-3">{channelData?.name || "Channel Name"}</h1>
           <p className="text-gray-400">@{ userData?.username}</p>
           <p className="text-sm text-gray-400 mt-1">
-            More about this channel... <span className="text-blue-400 cursor-pointer">{userData?.channel?.category}</span>
+            More about this channel... <span className="text-blue-400 cursor-pointer">{channelData?.category || userData?.channel?.category}</span>
           </p>
           {/* Buttons */}
           <div className="flex gap-4 mt-4">
