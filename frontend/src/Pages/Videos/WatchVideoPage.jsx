@@ -27,9 +27,9 @@ const IconButton = ({ icon: Icon, active, label, count, onClick }) => (
 const WatchVideoPage = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
-  const { allVideoData, allShortData , recommendationData } = useSelector((state) => state.content);
+  const { allVideoData, allShortData, recommendationData } = useSelector((state) => state.content);
   const { userData } = useSelector((state) => state.user);
-   const allVideos = [
+  const allVideos = [
     ...(recommendationData?.recommendedVideos || []),
     ...(recommendationData?.remainingVideos || []),
   ];
@@ -38,7 +38,7 @@ const WatchVideoPage = () => {
     ...(recommendationData?.recommendedShorts || []),
     ...(recommendationData?.remainingShorts || []),
   ];
-   
+
 
   const suggestedVideos = allVideos?.filter((v) => v._id !== videoId).slice(0, 10) || [];
   const suggestedShorts = allShorts?.slice(0, 10) || [];
@@ -158,21 +158,21 @@ const WatchVideoPage = () => {
   };
 
   const handleSubscribe = async () => {
-  if (!channel?._id) return;
-  setLoading(true);
-  try {
-    const res = await axios.post(`${serverUrl}/api/user/subscribe`, { channelId: channel._id }, { withCredentials: true });
-    // Update channel's subscribers
-    setChannel((prev) => ({
-      ...prev,
-      subscribers: res.data.subscribers || prev.subscribers,
-    }));
-    setLoading(false);
-  } catch (err) {
-    console.error(err);
-    setLoading(false);
-  }
-};
+    if (!channel?._id) return;
+    setLoading(true);
+    try {
+      const res = await axios.post(`${serverUrl}/api/user/subscribe`, { channelId: channel._id }, { withCredentials: true });
+      // Update channel's subscribers
+      setChannel((prev) => ({
+        ...prev,
+        subscribers: res.data.subscribers || prev.subscribers,
+      }));
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
 
 
 
@@ -186,16 +186,30 @@ const WatchVideoPage = () => {
     );
   }, [channel.subscribers, userData?._id]);
 
+  const [isCommenting, setIsCommenting] = useState(false);
+
   const handleAddComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || isCommenting) return;
+
+    setIsCommenting(true);
+
     try {
-      const res = await axios.post(`${serverUrl}/api/content/video/${videoId}/comment`, { message: newComment }, { withCredentials: true });
+      const res = await axios.post(
+        `${serverUrl}/api/content/video/${videoId}/comment`,
+        { message: newComment.trim() },
+        { withCredentials: true }
+      );
+
       setComments(res.data?.comments);
-      console.log(res.data.comments)
+      setNewComment("");
 
-    } catch (err) { console.error(err); }
+      console.log(res.data?.comments);
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    } finally {
+      setIsCommenting(false);
+    }
   };
-
 
 
 
@@ -211,10 +225,12 @@ const WatchVideoPage = () => {
   useEffect(() => {
     const addHistory = async () => {
       try {
-       const res =  await axios.post(
+        const res = await axios.post(
           `${serverUrl}/api/user/addhistory`,
-          { contentId: videoId,
-  contentType: "Video" },
+          {
+            contentId: videoId,
+            contentType: "Video"
+          },
           { withCredentials: true }
         );
         console.log(res.data)
@@ -250,62 +266,62 @@ const WatchVideoPage = () => {
             autoPlay
           />
           {showControls && (
-  <div className="absolute inset-0 hidden lg:flex items-center justify-center gap-6 sm:gap-10 transition-opacity duration-300 z-20">
-    <button onClick={skipBackward} className="bg-black/70 p-3 sm:p-4 rounded-full hover:bg-orange-600 transition"><FaBackward size={24} /></button>
-    <button onClick={togglePlay} className="bg-black/70 p-4 sm:p-6 rounded-full hover:bg-orange-600 transition">
-      {isPlaying ? <FaPause size={28} /> : <FaPlay size={28} />}
-    </button>
-    <button onClick={skipForward} className="bg-black/70 p-3 sm:p-4 rounded-full hover:bg-orange-600 transition"><FaForward size={24} /></button>
-  </div>
-)}
+            <div className="absolute inset-0 hidden lg:flex items-center justify-center gap-6 sm:gap-10 transition-opacity duration-300 z-20">
+              <button onClick={skipBackward} className="bg-black/70 p-3 sm:p-4 rounded-full hover:bg-orange-600 transition"><FaBackward size={24} /></button>
+              <button onClick={togglePlay} className="bg-black/70 p-4 sm:p-6 rounded-full hover:bg-orange-600 transition">
+                {isPlaying ? <FaPause size={28} /> : <FaPlay size={28} />}
+              </button>
+              <button onClick={skipForward} className="bg-black/70 p-3 sm:p-4 rounded-full hover:bg-orange-600 transition"><FaForward size={24} /></button>
+            </div>
+          )}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent px-2 sm:px-4 py-2 z-30">
             <input type="range" min="0" max="100" value={progress} onChange={handleSeek} className="w-full accent-orange-600" />
             <div className="flex items-center justify-between mt-1 sm:mt-2 text-xs sm:text-sm text-gray-200">
-  {/* Left side: Play + Skip + Time */}
-  <div className="flex items-center gap-3">
-    {/* Play/Pause */}
-    <button 
-      onClick={togglePlay} 
-      className="bg-black/70 px-2 py-1 rounded hover:bg-orange-600 transition"
-    >
-      {isPlaying ? <FaPause size={14} /> : <FaPlay size={14} />}
-    </button>
+              {/* Left side: Play + Skip + Time */}
+              <div className="flex items-center gap-3">
+                {/* Play/Pause */}
+                <button
+                  onClick={togglePlay}
+                  className="bg-black/70 px-2 py-1 rounded hover:bg-orange-600 transition"
+                >
+                  {isPlaying ? <FaPause size={14} /> : <FaPlay size={14} />}
+                </button>
 
-    {/* Skip Backward */}
-    <button 
-      onClick={skipBackward} 
-      className="bg-black/70 px-2 py-1 rounded hover:bg-orange-600 transition"
-    >
-      <FaBackward size={14} />
-    </button>
+                {/* Skip Backward */}
+                <button
+                  onClick={skipBackward}
+                  className="bg-black/70 px-2 py-1 rounded hover:bg-orange-600 transition"
+                >
+                  <FaBackward size={14} />
+                </button>
 
-    {/* Time */}
-    <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+                {/* Time */}
+                <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
 
-    {/* Skip Forward */}
-    <button 
-      onClick={skipForward} 
-      className="bg-black/70 px-2 py-1 rounded hover:bg-orange-600 transition"
-    >
-      <FaForward size={14} />
-    </button>
-  </div>
+                {/* Skip Forward */}
+                <button
+                  onClick={skipForward}
+                  className="bg-black/70 px-2 py-1 rounded hover:bg-orange-600 transition"
+                >
+                  <FaForward size={14} />
+                </button>
+              </div>
 
-  {/* Right side: Volume + Fullscreen */}
-  <div className="flex items-center gap-2 sm:gap-3">
-    <button onClick={toggleMute}>
-      {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
-    </button>
-    <input 
-      type="range" 
-      min="0" max="1" step="0.1" 
-      value={isMuted ? 0 : volume} 
-      onChange={handleVolume} 
-      className="accent-orange-600 w-16 sm:w-24" 
-    />
-    <button onClick={handleFullScreen}><FaExpand /></button>
-  </div>
-</div>
+              {/* Right side: Volume + Fullscreen */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button onClick={toggleMute}>
+                  {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+                </button>
+                <input
+                  type="range"
+                  min="0" max="1" step="0.1"
+                  value={isMuted ? 0 : volume}
+                  onChange={handleVolume}
+                  className="accent-orange-600 w-16 sm:w-24"
+                />
+                <button onClick={handleFullScreen}><FaExpand /></button>
+              </div>
+            </div>
 
           </div>
         </div>
@@ -340,10 +356,10 @@ const WatchVideoPage = () => {
           </div>
         </div>
 
-     <div className="mt-4 bg-[#1a1a1a] p-3 rounded-lg">
-  <h2 className="text-md font-semibold mb-2">Description</h2>
-  <Description text={video?.description} />
-</div>
+        <div className="mt-4 bg-[#1a1a1a] p-3 rounded-lg">
+          <h2 className="text-md font-semibold mb-2">Description</h2>
+          <Description text={video?.description} />
+        </div>
         {/* Comments */}
         <div className="mt-6">
           <h2 className="text-lg font-semibold mb-3">Comments</h2>
@@ -390,19 +406,19 @@ const WatchVideoPage = () => {
           <SiYoutubeshorts className="text-red-600" /> Shorts
         </h2>
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-3">
-  {suggestedShorts.map((short) => (
-    <div key={short._id} >
-      <ShortsCard
-        shortUrl={short.shortUrl}
-        title={short.title}
-        channelName={short.channel?.name}
-        views={short.views}
-        id={short._id}
-        avatar={short.channel?.avatar}
-      />
-    </div>
-  ))}
-</div>
+          {suggestedShorts.map((short) => (
+            <div key={short._id} >
+              <ShortsCard
+                shortUrl={short.shortUrl}
+                title={short.title}
+                channelName={short.channel?.name}
+                views={short.views}
+                id={short._id}
+                avatar={short.channel?.avatar}
+              />
+            </div>
+          ))}
+        </div>
         <h2 className="font-bold text-lg mt-4 mb-3">Up next</h2>
         <div className="space-y-3">
           {suggestedVideos.map((v) => (

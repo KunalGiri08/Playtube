@@ -12,7 +12,7 @@ export default function PlaylistCard({ id, title, videos, savedBy }) {
     savedBy?.some((uid) => uid.toString() === userData?._id?.toString()) || false
   );
 
-  
+
   const [loading, setLoading] = useState(false);
 
   const thumbnail = videos[0]?.thumbnail;
@@ -63,11 +63,10 @@ export default function PlaylistCard({ id, title, videos, savedBy }) {
         <button
           onClick={handleToggleSave}
           disabled={loading}
-          className={`absolute top-2 right-2 p-2 rounded-full transition border-1 border-gray-700 ${
-            isSaved
+          className={`absolute top-2 right-2 p-2 rounded-full transition border-1 border-gray-700 ${isSaved
               ? "bg-white text-black hover:bg-gray-300"
               : "bg-black/70 text-white hover:bg-black"
-          }`}
+            }`}
         >
           <FaBookmark size={16} />
         </button>

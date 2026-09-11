@@ -91,17 +91,26 @@ export const searchContent = async (req, res) => {
         .lean(),
       Playlist.find({ $or: playlistOr })
         .populate("channel", "name avatar")
+        .populate({
+          path: "videos",
+          populate: { path: "channel", select: "name avatar" },
+        })
         .select("title description videos saveBy createdAt channel")
         .sort({ createdAt: -1 })
         .lean(),
     ]);
+
+    const sanitizedPlaylists = (playlists || []).map((pl) => ({
+      ...pl,
+      videos: Array.isArray(pl.videos) ? pl.videos.filter(Boolean) : [],
+    }));
 
     return res.status(200).json({
       keyword: input,
       channels: matchedChannels,
       videos: videos || [],
       shorts: shorts || [],
-      playlists: playlists || [],
+      playlists: sanitizedPlaylists,
     });
   } catch (error) {
     console.error("Fast search error:", error);
@@ -208,17 +217,26 @@ The user query is: "${input}"
         ],
       })
         .populate("channel", "name avatar")
+        .populate({
+          path: "videos",
+          populate: { path: "channel", select: "name avatar" },
+        })
         .select("title description videos saveBy createdAt channel")
         .sort({ createdAt: -1 })
         .lean(),
     ]);
+
+    const sanitizedPlaylists = (playlists || []).map((pl) => ({
+      ...pl,
+      videos: Array.isArray(pl.videos) ? pl.videos.filter(Boolean) : [],
+    }));
 
     return res.status(200).json({
       keyword,
       channels: matchedChannels,
       videos: videos || [],
       shorts: shorts || [],
-      playlists: playlists || [],
+      playlists: sanitizedPlaylists,
     });
   } catch (error) {
     console.error("Search error:", error);
