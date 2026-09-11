@@ -23,16 +23,22 @@ const AnalyticsPage = () => {
   }
 
   // ------------------- Video Chart Data -------------------
-  const videoChartData = (channelData.videos || []).map((video) => ({
-    title: video.title.length > 10 ? video.title.slice(0, 10) + "..." : video.title, // short title for x-axis
-    views: video.views || 0,
-  }));
+  const videoChartData = (channelData.videos || []).map((video) => {
+    const rawTitle = video.title || "Untitled";
+    return {
+      title: rawTitle.length > 10 ? rawTitle.slice(0, 10) + "..." : rawTitle, // short title for x-axis
+      views: video.views || 0,
+    };
+  });
 
   // ------------------- Shorts Chart Data -------------------
-  const shortChartData = (channelData.shorts || []).map((short) => ({
-    title: short.title.length > 10 ? short.title.slice(0, 10) + "..." : short.title,
-    views: short.views || 0,
-  }));
+  const shortChartData = (channelData.shorts || []).map((short) => {
+    const rawTitle = short.title || "Untitled";
+    return {
+      title: rawTitle.length > 10 ? rawTitle.slice(0, 10) + "..." : rawTitle,
+      views: short.views || 0,
+    };
+  });
 
   return (
     <div className="w-full min-h-screen p-4 sm:p-6  text-white space-y-8 mb-[50px]">

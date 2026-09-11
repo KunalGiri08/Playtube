@@ -91,12 +91,12 @@ const handleDeletePost = async (postId) => {
                       <td className="p-3">
                         <img
                           src={v.thumbnail}
-                          alt={v.title}
+                          alt={v.title || "Video thumbnail"}
                           className="w-20 h-12 rounded object-cover"
                         />
                       </td>
-                      <td className="p-3 text-start">{v.title}</td>
-                      <td className="p-3 text-start">{v.views}</td>
+                      <td className="p-3 text-start">{v.title || "Untitled Video"}</td>
+                      <td className="p-3 text-start">{v.views || 0}</td>
                       <td className="p-3">
                         <FaEdit
                           className="cursor-pointer hover:text-blue-400"
@@ -120,14 +120,14 @@ const handleDeletePost = async (postId) => {
                 >
                   <img
                     src={v.thumbnail}
-                    alt={v.title}
+                    alt={v.title || "Video thumbnail"}
                     className="w-full h-40 object-cover"
                   />
                   <div className="flex-1 p-4">
-                    <h3 className="text-base font-semibold ">{v.title}</h3>
+                    <h3 className="text-base font-semibold ">{v.title || "Untitled Video"}</h3>
                   </div>
                   <div className="px-4 py-3 border-t border-gray-700 flex items-center justify-between text-sm text-gray-400">
-                    <span>{v.views} views</span>
+                    <span>{v.views || 0} views</span>
                     <FaEdit
                       className="cursor-pointer hover:text-blue-400"
                       onClick={() =>
@@ -233,12 +233,12 @@ const handleDeletePost = async (postId) => {
                     >
                       <td className="p-3">
                         <img
-                          src={p.videos[0]?.thumbnail}
-                          alt={p.title}
+                          src={p.videos?.[0]?.thumbnail}
+                          alt={p.title || "Playlist thumbnail"}
                           className="w-20 h-12 rounded object-cover"
                         />
                       </td>
-                      <td className="p-3 text-start">{p.title}</td>
+                      <td className="p-3 text-start">{p.title || "Untitled Playlist"}</td>
                       <td className="p-3 text-start">{p.videos?.length || 0}</td>
                       <td className="p-3">
                         <FaEdit className="cursor-pointer hover:text-blue-400" onClick={() =>
@@ -259,13 +259,13 @@ const handleDeletePost = async (postId) => {
                   className="bg-[#1c1c1c] rounded-xl shadow overflow-hidden flex flex-col"
                 >
                   <img
-                    src={p.videos[0]?.thumbnail}
-                    alt={p.title}
+                    src={p.videos?.[0]?.thumbnail}
+                    alt={p.title || "Playlist thumbnail"}
                     className="w-full h-32 object-cover"
                   />
                   <div className="p-4 flex justify-between items-center">
                     <div>
-                      <h3 className="text-sm font-semibold">{p.title}</h3>
+                      <h3 className="text-sm font-semibold">{p.title || "Untitled Playlist"}</h3>
                       <p className="text-xs text-gray-400">
                         {p.videos?.length || 0} videos
                       </p>

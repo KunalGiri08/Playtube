@@ -15,6 +15,14 @@ function Dashboard() {
   const navigate = useNavigate()
 
 
+  if (!channelData) {
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-400">
+        Loading channel data...
+      </div>
+    );
+  }
+
   const totalVideoViews = (channelData.videos || []).reduce(
     (acc, vid) => acc + (vid.views || 0),
     0
@@ -24,15 +32,6 @@ function Dashboard() {
     0
   );
   const totalViews = totalVideoViews + totalShortViews;
-
-
-  if (!channelData) {
-    return (
-      <div className="flex items-center justify-center h-screen text-gray-400">
-        Loading channel data...
-      </div>
-    );
-  }
 
   return (
     <div className="w-full  text-white min-h-screen p-4 sm:p-6 space-y-6 mb-[50px]">
@@ -133,13 +132,19 @@ function AnalyticsCard({  label, value , onClick }) {
   );
 }
 
+const formatDate = (dateValue) => {
+  if (!dateValue) return "Recently";
+  const d = new Date(dateValue);
+  return isNaN(d.getTime()) ? "Recently" : d.toLocaleDateString();
+};
+
 function ContentCard({ content, isShort = false , onClick  }) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-start bg-[#0f0f0f] border border-gray-700 rounded-lg p-3 sm:p-4 hover:bg-[#202020] transition" onClick={onClick}>
+    <div className="flex flex-col sm:flex-row gap-4 items-start bg-[#0f0f0f] border border-gray-700 rounded-lg p-3 sm:p-4 hover:bg-[#202020] transition cursor-pointer" onClick={onClick}>
       {/* Thumbnail */}
       <img
         src={content.thumbnail}
-        alt="thumbnail"
+        alt={content.title || "Video thumbnail"}
         className={`${
           isShort ? "w-full sm:w-28 h-48 sm:h-40" : "w-full sm:w-40 h-48 sm:h-24"
         } rounded-lg object-cover`}
@@ -148,10 +153,10 @@ function ContentCard({ content, isShort = false , onClick  }) {
       {/* Content Info */}
       <div className="flex-1">
         <div className="w-[100%] flex flex-col items-start justify-center gap-2"><h4 className="font-semibold text-sm sm:text-base line-clamp-2">
-          {content.title}
+          {content.title || "Untitled Video"}
         </h4>
         <p className="text-xs text-gray-400 mt-1">
-          Published {new Date(content.createdAt).toLocaleDateString()}
+          Published {formatDate(content.createdAt)}
         </p>
         </div>
 
@@ -174,11 +179,11 @@ function ContentCard({ content, isShort = false , onClick  }) {
 
 function ContentCard1({ content , onClick }) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-start bg-[#0f0f0f] border border-gray-700 rounded-lg p-3 sm:p-4 hover:bg-[#202020] transition" onClick={onClick}>
+    <div className="flex flex-col sm:flex-row gap-4 items-start bg-[#0f0f0f] border border-gray-700 rounded-lg p-3 sm:p-4 hover:bg-[#202020] transition cursor-pointer" onClick={onClick}>
       {/* Thumbnail */}
        <video
           src={content.shortUrl}
-          className="w-20 h-24 object-cover"
+          className="w-20 h-24 object-cover rounded"
           muted
           playsInline
           preload="metadata"
@@ -188,10 +193,10 @@ function ContentCard1({ content , onClick }) {
       {/* Content Info */}
       <div className="flex-1">
         <div className="w-[100%] flex flex-col items-start justify-center gap-2"><h4 className="font-semibold text-sm sm:text-base line-clamp-2">
-          {content.title}
+          {content.title || "Untitled Short"}
         </h4>
         <p className="text-xs text-gray-400 mt-1">
-          Published {new Date(content.createdAt).toLocaleDateString()}
+          Published {formatDate(content.createdAt)}
         </p>
         </div>
 

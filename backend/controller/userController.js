@@ -2,6 +2,8 @@ import User from "../model/userModel.js";
 import Channel from "../model/channelModel.js";
 import Video from "../model/videoModel.js";
 import Short from "../model/shortModel.js";
+import Playlist from "../model/playlistModel.js";
+import Post from "../model/postModel.js";
 import uploadOnCloudinary from "../config/cloudinary.js";
 
 
@@ -83,10 +85,43 @@ export const getChannel = async (req, res) => {
 
     const channel = await Channel.findOne({ owner: userId })
       .populate("owner")
-
+      .populate("videos")
+      .populate("shorts")
+      .populate("subscribers")
+      .populate({
+        path: "communityPosts",
+        populate: {
+          path: "channel",
+          model: "Channel",
+        },
+      })
+      .populate({
+        path: "playlists",
+        populate: {
+          path: "videos",
+          model: "Video",
+          populate: {
+            path: "channel",
+            model: "Channel",
+          },
+        },
+      });
 
     if (!channel) {
       return res.status(404).json({ message: "Channel not found" });
+    }
+
+    if (Array.isArray(channel.videos)) {
+      channel.videos = channel.videos.filter(Boolean);
+    }
+    if (Array.isArray(channel.shorts)) {
+      channel.shorts = channel.shorts.filter(Boolean);
+    }
+    if (Array.isArray(channel.playlists)) {
+      channel.playlists = channel.playlists.filter(Boolean);
+    }
+    if (Array.isArray(channel.communityPosts)) {
+      channel.communityPosts = channel.communityPosts.filter(Boolean);
     }
 
     return res.status(200).json(channel);
@@ -135,8 +170,43 @@ export const updateChannel = async (req, res) => {
     }
 
     // Save updated channel
-    const updatedChannel = await channel.save();
-    await updatedChannel.populate("owner");
+    await channel.save();
+    const updatedChannel = await Channel.findById(channel._id)
+      .populate("owner")
+      .populate("videos")
+      .populate("shorts")
+      .populate("subscribers")
+      .populate({
+        path: "communityPosts",
+        populate: {
+          path: "channel",
+          model: "Channel",
+        },
+      })
+      .populate({
+        path: "playlists",
+        populate: {
+          path: "videos",
+          model: "Video",
+          populate: {
+            path: "channel",
+            model: "Channel",
+          },
+        },
+      });
+
+    if (Array.isArray(updatedChannel.videos)) {
+      updatedChannel.videos = updatedChannel.videos.filter(Boolean);
+    }
+    if (Array.isArray(updatedChannel.shorts)) {
+      updatedChannel.shorts = updatedChannel.shorts.filter(Boolean);
+    }
+    if (Array.isArray(updatedChannel.playlists)) {
+      updatedChannel.playlists = updatedChannel.playlists.filter(Boolean);
+    }
+    if (Array.isArray(updatedChannel.communityPosts)) {
+      updatedChannel.communityPosts = updatedChannel.communityPosts.filter(Boolean);
+    }
 
     // Optionally update user's username & photo if channel name/avatar changes
     await User.findByIdAndUpdate(userId, {

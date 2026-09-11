@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { FaTachometerAlt, FaChartBar, FaVideo, FaPlusCircle } from "react-icons/fa";
 import { SiYoutubestudio } from "react-icons/si";
@@ -8,9 +8,20 @@ import { RiMoneyRupeeCircleFill } from "react-icons/ri";
 
 function PTStudio() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { channelData } = useSelector((state) => state.user);
-  const [active, setActive] = useState("Dashboard");
   const [open, setOpen] = useState(false);
+
+  // Derive active tab from current pathname so direct access and refresh always highlight the right tab
+  const getActiveTab = () => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes("/content")) return "Content";
+    if (path.includes("/analytics")) return "Analytics";
+    if (path.includes("/revenue")) return "Revenue";
+    return "Dashboard";
+  };
+
+  const active = getActiveTab();
 
   return (
     <div className="bg-[#0f0f0f] text-white min-h-screen flex flex-col">
@@ -74,28 +85,24 @@ function PTStudio() {
               icon={<FaTachometerAlt />}
               text="Dashboard"
               active={active}
-              setActive={setActive}
               onClick={() => navigate("/ptstudio/dashboard")}
             />
             <SidebarItem
               icon={<FaVideo />}
               text="Content"
               active={active}
-              setActive={setActive}
               onClick={() => navigate("/ptstudio/content")}
             />
             <SidebarItem
               icon={<FaChartBar />}
               text="Analytics"
               active={active}
-              setActive={setActive}
               onClick={() => navigate("/ptstudio/analytics")}
             />
             <SidebarItem
               icon={<RiMoneyRupeeCircleFill className="w-6 h-6"/>}
               text="Revenue"
               active={active}
-              setActive={setActive}
               onClick={() => navigate("/ptstudio/revenue")}
             />
           </nav>
@@ -119,7 +126,6 @@ function PTStudio() {
           text="Dashboard"
           active={active === "Dashboard"}
           onClick={() => {
-            setActive("Dashboard");
             navigate("/ptstudio/dashboard");
           }}
         />
@@ -128,7 +134,6 @@ function PTStudio() {
           text="Content"
           active={active === "Content"}
           onClick={() => {
-            setActive("Content");
             navigate("/ptstudio/content");
           }}
         />
@@ -142,7 +147,6 @@ function PTStudio() {
           text="Analytics"
           active={active === "Analytics"}
           onClick={() => {
-            setActive("Analytics");
             navigate("/ptstudio/analytics");
           }}
         />
@@ -151,7 +155,6 @@ function PTStudio() {
           text="Revenue"
           active={active === "Revenue"}
           onClick={() => {
-            setActive("Revenue");
             navigate("/ptstudio/revenue");
           }}
         />
@@ -160,15 +163,12 @@ function PTStudio() {
   );
 }
 
-function SidebarItem({ icon, text, onClick, active, setActive }) {
+function SidebarItem({ icon, text, onClick, active }) {
   const isActive = active === text;
 
   return (
     <button
-      onClick={() => {
-        setActive(text);
-        onClick();
-      }}
+      onClick={onClick}
       className={`flex items-center gap-2 lg:gap-3 w-full px-3 py-2 rounded-lg transition-all ${
         isActive
           ? "bg-[#272727] text-white shadow-md"

@@ -29,6 +29,33 @@ const RevenuePage = () => {
   const { channelData } = useSelector((state) => state.user);
   const dispatch = useDispatch()
 
+  // ------------------- Videos Revenue Data -------------------
+  const videoRevenueData = (channelData?.videos || []).map((video) => {
+    const rawTitle = video.title || "Untitled";
+    return {
+      title: rawTitle.length > 10 ? rawTitle.slice(0, 15) + "..." : rawTitle,
+      revenue: calculateRevenue(video.views || 0, "video"),
+    };
+  });
+
+  // ------------------- Shorts Revenue Data -------------------
+  const shortRevenueData = (channelData?.shorts || []).map((short) => {
+    const rawTitle = short.title || "Untitled";
+    return {
+      title: rawTitle.length > 10 ? rawTitle.slice(0, 15) + "..." : rawTitle,
+      revenue: calculateRevenue(short.views || 0, "short"),
+    };
+  });
+
+  // ------------------- Total Revenue -------------------
+  const totalRevenue =
+    videoRevenueData.reduce((sum, v) => sum + v.revenue, 0) +
+    shortRevenueData.reduce((sum, s) => sum + s.revenue, 0);
+
+  useEffect(() => {
+    dispatch(setContentRevenue(totalRevenue));
+  }, [totalRevenue, dispatch]);
+
   if (!channelData) {
     return (
       <div className="flex items-center justify-center h-screen text-gray-400">
@@ -36,29 +63,6 @@ const RevenuePage = () => {
       </div>
     );
   }
-
-
-  // ------------------- Videos Revenue Data -------------------
-  const videoRevenueData = (channelData.videos || []).map((video) => ({
-    title: video.title.length > 10 ? video.title.slice(0, 15) + "..." : video.title,
-    revenue: calculateRevenue(video.views || 0, "video"),
-  }));
-
-  // ------------------- Shorts Revenue Data -------------------
-  const shortRevenueData = (channelData.shorts || []).map((short) => ({
-    title: short.title.length > 10 ? short.title.slice(0, 15) + "..." : short.title,
-    revenue: calculateRevenue(short.views || 0, "short"),
-  }));
-
-  // ------------------- Total Revenue -------------------
-  const totalRevenue =
-    videoRevenueData.reduce((sum, v) => sum + v.revenue, 0) +
-    shortRevenueData.reduce((sum, s) => sum + s.revenue, 0);
-
-
-    useEffect(() => {
-    dispatch(setContentRevenue(totalRevenue));
-  }, [totalRevenue]);
 
   return (
     <div className="w-full min-h-screen p-4 sm:p-6 text-white space-y-8 mb-[50px]">

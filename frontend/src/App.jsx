@@ -111,14 +111,25 @@ function App() {
 
 
         <Route path='/ptstudio' element={<ProtectedRoute userData={userData}><PTStudio /></ProtectedRoute>} >
-          <Route path='/ptstudio/dashboard' element={<ProtectedRoute userData={userData}><Dashboard /></ProtectedRoute>} />
-          <Route path='/ptstudio/content' element={<ProtectedRoute userData={userData}><ContentPage /></ProtectedRoute>} />
-          <Route path='/ptstudio/analytics' element={<ProtectedRoute userData={userData}><AnalyticsPage /></ProtectedRoute>} />
-          <Route path='/ptstudio/revenue' element={<ProtectedRoute userData={userData}><RevenuePage /></ProtectedRoute>} />
-          <Route path='/ptstudio/managevideo/:videoId' element={<ProtectedRoute userData={userData}><ManageVideo /></ProtectedRoute>} />
-          <Route path='/ptstudio/manageshort/:shortId' element={<ProtectedRoute userData={userData}><ManageShort /></ProtectedRoute>} />
-          <Route path='/ptstudio/manageplaylist/:playlistId' element={<ProtectedRoute userData={userData}><ManagePlaylist /></ProtectedRoute>} />
+          <Route index element={<Navigate to="/ptstudio/dashboard" replace />} />
+          <Route path='dashboard' element={<Dashboard />} />
+          <Route path='content' element={<ContentPage />} />
+          <Route path='analytics' element={<AnalyticsPage />} />
+          <Route path='revenue' element={<RevenuePage />} />
+          <Route path='managevideo/:videoId' element={<ManageVideo />} />
+          <Route path='manageshort/:shortId' element={<ManageShort />} />
+          <Route path='manageplaylist/:playlistId' element={<ManagePlaylist />} />
         </Route>
+
+        {/* Direct /studio aliases */}
+        <Route path='/studio' element={<Navigate to="/ptstudio/dashboard" replace />} />
+        <Route path='/studio/dashboard' element={<Navigate to="/ptstudio/dashboard" replace />} />
+        <Route path='/studio/content' element={<Navigate to="/ptstudio/content" replace />} />
+        <Route path='/studio/analytics' element={<Navigate to="/ptstudio/analytics" replace />} />
+        <Route path='/studio/revenue' element={<Navigate to="/ptstudio/revenue" replace />} />
+        <Route path='/studio/managevideo/:videoId' element={<Navigate to="/ptstudio/managevideo/:videoId" replace />} />
+        <Route path='/studio/manageshort/:shortId' element={<Navigate to="/ptstudio/manageshort/:shortId" replace />} />
+        <Route path='/studio/manageplaylist/:playlistId' element={<Navigate to="/ptstudio/manageplaylist/:playlistId" replace />} />
 
 
 
