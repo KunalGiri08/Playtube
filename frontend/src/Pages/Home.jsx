@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../assets/playtube1.png";
 
 import {
@@ -34,6 +34,7 @@ function Home() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const { userData, subscribeChannel } = useSelector(
     (state) => state.user
@@ -59,68 +60,177 @@ function Home() {
     "Vlogs",
   ];
 
-  // Voice recognition
-  const recognitionRef = useRef(null);
+  // Keep search input synced with URL query param if on /search
+  useEffect(() => {
+    if (location.pathname === "/search") {
+      const q = searchParams.get("q");
+      if (q !== null && q !== undefined) {
+        setInput(q);
+      }
+    }
+  }, [location.pathname, searchParams]);
 
-  if (
-    !recognitionRef.current &&
-    (window.SpeechRecognition || window.webkitSpeechRecognition)
-  ) {
+  // Voice recognition reference and active flag
+  const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
+
+  // Central search handler used by both normal text and voice search
+  const handleSearch = useCallback(
+    (searchQuery = input, options = {}) => {
+      const query =
+        typeof searchQuery === "string" ? searchQuery.trim() : input.trim();
+      if (!query) return;
+
+      // Close voice popup if open
+      setPopUp(false);
+
+      // Stop listening if active
+      if (isListeningRef.current && recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+        isListeningRef.current = false;
+        setListening(false);
+      }
+
+      const isVoice = Boolean(options?.isVoice);
+      setInput(query);
+
+      // If already at /search?q={query} without voice, avoid redundant router push
+      const currentQ = searchParams.get("q");
+      if (location.pathname === "/search" && currentQ === query && !isVoice) {
+        return;
+      }
+
+      navigate(
+        `/search?q=${encodeURIComponent(query)}${isVoice ? "&voice=true" : ""}`,
+        {
+          state: {
+            fromVoice: isVoice,
+            query,
+            timestamp: Date.now(),
+          },
+        }
+      );
+    },
+    [input, navigate, location.pathname, searchParams]
+  );
+
+  // Initialize SpeechRecognition safely using React lifecycle
+  useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = false;
-    recognitionRef.current.lang = "en-US";
-  }
+    if (!SpeechRecognition) return;
 
-  const handleVoiceSearch = () => {
-    if (!recognitionRef.current) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      isListeningRef.current = true;
+      setListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      isListeningRef.current = false;
+      setListening(false);
+      const transcript =
+        event.results?.[0]?.[0]?.transcript?.trim();
+
+      if (transcript) {
+        setInput(transcript);
+        setPopUp(false);
+        // Execute central search directly with the transcript (avoids state race condition)
+        handleSearch(transcript, { isVoice: true });
+      }
+    };
+
+    recognition.onerror = (event) => {
+      isListeningRef.current = false;
+      setListening(false);
+
+      if (
+        event.error === "not-allowed" ||
+        event.error === "service-not-allowed"
+      ) {
+        alert(
+          "Microphone permission was denied. Please allow microphone access in your browser."
+        );
+      } else if (event.error === "no-speech" || event.error === "aborted") {
+        // Normal graceful stop
+      } else {
+        console.error("Speech recognition error:", event.error);
+      }
+    };
+
+    recognition.onend = () => {
+      isListeningRef.current = false;
+      setListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      try {
+        recognition.abort();
+      } catch (e) {}
+      recognitionRef.current = null;
+    };
+  }, [handleSearch]);
+
+  const startVoiceListening = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition || !recognitionRef.current) {
       alert("Speech recognition is not supported in your browser.");
       return;
     }
 
-    if (listening) {
-      recognitionRef.current.stop();
-      setListening(false);
+    if (isListeningRef.current) {
       return;
     }
 
-    setListening(true);
-    recognitionRef.current.start();
-
-    recognitionRef.current.onresult = (event) => {
-      const transcript =
-        event.results[0][0].transcript.trim();
-
-      setInput(transcript);
-      setListening(false);
-    };
-
-    recognitionRef.current.onerror = (error) => {
-      console.error("Speech recognition error:", error);
-      setListening(false);
-    };
-
-    recognitionRef.current.onend = () => {
-      setListening(false);
-    };
+    try {
+      recognitionRef.current.start();
+    } catch (err) {
+      console.warn("Speech recognition start warning:", err?.message || err);
+    }
   };
 
-  const handleSearch = () => {
-    if (!input.trim()) return;
+  const stopVoiceListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+    }
+    isListeningRef.current = false;
+    setListening(false);
+  };
 
-    console.log("Search:", input);
+  const handleVoiceSearchToggle = () => {
+    if (listening) {
+      stopVoiceListening();
+    } else {
+      startVoiceListening();
+    }
+  };
 
-    // Search API/component can be added later.
+  const openVoicePopup = () => {
+    setPopUp(true);
+    startVoiceListening();
+  };
+
+  const closeVoicePopup = () => {
+    stopVoiceListening();
     setPopUp(false);
   };
 
   const handleCategory = (category) => {
-    console.log("Selected category:", category);
-
-    // Category filtering can be added later.
+    if (!category) return;
+    handleSearch(category);
   };
 
   return (
@@ -134,7 +244,7 @@ function Home() {
 
             <button
               className="absolute top-4 right-4 text-gray-400 hover:text-white"
-              onClick={() => setPopUp(false)}
+              onClick={closeVoicePopup}
             >
               <FaTimes size={22} />
             </button>
@@ -164,11 +274,16 @@ function Home() {
                   className="flex-1 px-4 py-2 rounded-full bg-[#2a2a2a] text-white outline-none border border-gray-600"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch(input);
+                    }
+                  }}
                 />
 
                 <button
                   className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full"
-                  onClick={handleSearch}
+                  onClick={() => handleSearch(input)}
                 >
                   <FaSearch />
                 </button>
@@ -181,7 +296,7 @@ function Home() {
                   ? "bg-red-600 animate-pulse"
                   : "bg-[#272727] hover:bg-[#3f3f3f]"
               }`}
-              onClick={handleVoiceSearch}
+              onClick={handleVoiceSearchToggle}
             >
               <FaMicrophone className="w-8 h-8" />
             </button>
@@ -235,14 +350,14 @@ function Home() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    handleSearch();
+                    handleSearch(input);
                   }
                 }}
               />
 
               <button
                 className="bg-[#272727] px-4 rounded-r-full border border-gray-700"
-                onClick={handleSearch}
+                onClick={() => handleSearch(input)}
               >
                 <FaSearch />
               </button>
@@ -251,7 +366,7 @@ function Home() {
 
             <button
               className="bg-[#272727] p-3 rounded-full"
-              onClick={() => setPopUp(true)}
+              onClick={openVoicePopup}
             >
               <FaMicrophone />
             </button>
@@ -287,7 +402,7 @@ function Home() {
 
             <FaSearch
               className="text-lg md:hidden cursor-pointer"
-              onClick={() => setPopUp(true)}
+              onClick={openVoicePopup}
             />
 
           </div>

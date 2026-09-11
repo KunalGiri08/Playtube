@@ -5,7 +5,7 @@ import { addComment, addReply, addView, createVideo, deleteVideo, fetchVideo, ge
 import { addCommentforShort, addReplyforShort, addViewforShort, createShort, deleteShort, fetchShort, getAllShorts, getLikedShorts, getSavedShorts, toggleDislikeShort, toggleLikeShort, toggleSaveShort, updateShort } from "../controller/shortController.js";
 import { createPlaylist, deletePlaylist, fetchPlaylist, getSavedPlaylists, toggleSavePlaylist, updatePlaylist } from "../controller/playlistController.js";
 import { addCommentInPost, addReplyInPost, createPost, deletePost, getAllPosts, toggleLikePost } from "../controller/postController.js";
-import { filterCategoryWithAi, searchWithAi } from "../controller/aiController.js";
+import { filterCategoryWithAi, searchWithAi, searchContent } from "../controller/aiController.js";
 
 const contentRouter = express.Router()
 
@@ -120,9 +120,11 @@ contentRouter.get("/saveplaylist",isAuth,getSavedPlaylists)
 
 
 // for Ai Controller
-
-contentRouter.post("/search" , isAuth , searchWithAi)
-contentRouter.post("/filter" , isAuth , filterCategoryWithAi)
+contentRouter.post("/search", searchContent);
+contentRouter.get("/search", searchContent);
+contentRouter.post("/ai-search", searchWithAi);
+contentRouter.get("/ai-search", searchWithAi);
+contentRouter.post("/filter", filterCategoryWithAi);
 
 
 

@@ -44,6 +44,7 @@ import ScrollToTop from "./component/ScrollToTop";
 import YoutubeSignin from "./Pages/SignIn";
 import CreateAccount from "./Pages/SignUp";
 import CreateChannelFlow from "./Pages/Channel/CreateChannel";
+import SearchResults from "./Pages/SearchResults";
 export const serverUrl = "http://localhost:8000"
 
 const ProtectedRoute = ({ userData, children }) => {
@@ -94,8 +95,7 @@ function App() {
           <Route path='/savevideos' element={<ProtectedRoute userData={userData}><SavedContentPage /></ProtectedRoute>} />
           <Route path='/likedvideos' element={<ProtectedRoute userData={userData}><LikedContentPage /></ProtectedRoute>} />
           <Route path='/history' element={<ProtectedRoute userData={userData}><HistoryPage /></ProtectedRoute>} />
-
-
+          <Route path='/search' element={<SearchResults />} />
 
         </Route>
 
