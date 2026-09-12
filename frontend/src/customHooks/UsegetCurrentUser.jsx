@@ -4,7 +4,7 @@ import { serverUrl } from '../App'
 import { useDispatch, useSelector } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 
-const getCurrentUser = () => {
+const useGetCurrentUser = () => {
     const dispatch = useDispatch()
     const {channelData} = useSelector(state=>state.user)
 
@@ -20,7 +20,7 @@ const getCurrentUser = () => {
     }
    }
    fetchUser()
-  },[channelData])
+  },[channelData, dispatch])
 }
 
-export default getCurrentUser
+export default useGetCurrentUser

@@ -407,11 +407,7 @@ export const getSavedVideos = async (req, res) => {
       .populate("channel", "name avatar") // channel info include karo
       .populate("saveBy", "username");    // optional: dekhna kaun save kar chuka hai
 
-    if (!savedVideos || savedVideos.length === 0) {
-      return res.status(404).json({ message: "No saved videos found" });
-    }
-
-    res.status(200).json(savedVideos);
+    res.status(200).json(savedVideos || []);
   } catch (error) {
     console.error("Error fetching saved videos:", error);
     res.status(500).json({

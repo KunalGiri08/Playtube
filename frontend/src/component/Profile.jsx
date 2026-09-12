@@ -11,7 +11,7 @@ import axios from "axios";
 import { serverUrl } from "../App";
 import { showCustomAlert } from "./CustomAlert";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserData } from "../redux/userSlice";
+import { setChannelData, setUserData } from "../redux/userSlice";
 import { auth, provider } from "../../utils/firebase";
 import { signInWithPopup } from "firebase/auth";
 import { SiYoutubestudio } from "react-icons/si";
@@ -22,16 +22,16 @@ const Profile = () => {
  const dispatch = useDispatch()
   const handleSignOut = async () => {
         try {
-            const result = await axios.get(serverUrl + "/api/auth/signout" , {withCredentials:true})
+            const result = await axios.post(serverUrl + "/api/auth/signout", {}, {withCredentials:true})
             console.log(result.data)
             dispatch(setUserData(null))
+            dispatch(setChannelData(null))
             showCustomAlert("Signout Successfully")
-
-
         } catch (error) {
             console.log(error)
-            showCustomAlert(error.response.data.message)
-
+            dispatch(setUserData(null))
+            dispatch(setChannelData(null))
+            showCustomAlert(error.response?.data?.message || "Signout Successfully")
         }
     }
    const googleSignIn = async () => {

@@ -5,7 +5,7 @@ import Shorts from "./Pages/Shorts/Shorts";
 import SignIn from "./Pages/SignIn";
 import SignUp from "./Pages/SignUp";
 import CustomAlert, { showCustomAlert } from "./component/CustomAlert";
-import getCurrentUser from "./customHooks/UsegetCurrentUser";
+import useGetCurrentUser from "./customHooks/UsegetCurrentUser";
 import UsegetChannel from "./customHooks/UsegetChannel";
 import ForgetPassword from "./Pages/ForgetPassword";
 import MobileProfile from "./component/MobileProfile";
@@ -45,7 +45,7 @@ import YoutubeSignin from "./Pages/SignIn";
 import CreateAccount from "./Pages/SignUp";
 import CreateChannelFlow from "./Pages/Channel/CreateChannel";
 import SearchResults from "./Pages/SearchResults";
-export const serverUrl = "http://localhost:8000"
+export const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:8000"
 
 const ProtectedRoute = ({ userData, children }) => {
   if (!userData) {
@@ -56,7 +56,7 @@ const ProtectedRoute = ({ userData, children }) => {
 };
 
 function App() {
-  getCurrentUser()
+  useGetCurrentUser()
   UsegetChannel()
   UsegetChannelContent()
   UsegetAllContent()

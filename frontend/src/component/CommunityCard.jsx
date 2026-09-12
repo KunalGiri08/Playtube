@@ -8,7 +8,14 @@ export default function CommunityCard({ post }) {
   const { userData } = useSelector((state) => state.user);
 
   const [liked, setLiked] = useState(
-    post.likes?.some((u) => u === userData._id || u._id === userData._id)
+    Boolean(
+      userData?._id &&
+      post.likes?.some(
+        (u) =>
+          (u?._id ? u._id.toString() : u?.toString()) ===
+          userData._id.toString()
+      )
+    )
   );
   const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [showComments, setShowComments] = useState(false);
@@ -17,14 +24,23 @@ export default function CommunityCard({ post }) {
 
   // ✅ Toggle Like
   const handleLike = async () => {
+    if (!userData?._id) return;
     try {
       const res = await axios.put(
         `${serverUrl}/api/content/post/toggle-like`,
         { postId: post._id },
         { withCredentials: true }
       );
-      setLikeCount(res.data.likes.length);
-      setLiked(res.data.likes.includes(userData._id));
+      setLikeCount(res.data.likes?.length || 0);
+      setLiked(
+        Boolean(
+          res.data.likes?.some(
+            (u) =>
+              (u?._id ? u._id.toString() : u?.toString()) ===
+              userData._id.toString()
+          )
+        )
+      );
     } catch (error) {
       console.log(error);
     }

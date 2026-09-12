@@ -191,11 +191,7 @@ export const getSavedPlaylists = async (req, res) => {
         populate: { path: "channel", select: "name avatar" }, // videos ke andar channel details
       });
 
-    if (!savedPlaylists || savedPlaylists.length === 0) {
-      return res.status(404).json({ message: "No saved playlists found" });
-    }
-
-    res.status(200).json(savedPlaylists);
+    res.status(200).json(savedPlaylists || []);
   } catch (error) {
     console.error("Error fetching saved playlists:", error);
     res.status(500).json({

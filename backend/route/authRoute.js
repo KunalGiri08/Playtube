@@ -7,6 +7,7 @@ const authRouter = express.Router()
 authRouter.post("/signup", upload.single("photoUrl"), signUp)
 authRouter.post("/signin", signIn)
 authRouter.post("/signout", signOut)
+authRouter.get("/signout", signOut)
 authRouter.post("/google-auth", upload.single("photoUrl"), googleAuth);
 authRouter.post("/sendotp",sendOTP)
 authRouter.post("/verifyotp",verifyOTP)

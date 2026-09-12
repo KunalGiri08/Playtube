@@ -26,7 +26,7 @@ function ForgetPassword() {
 
         } catch (error) {
             console.log(error)
-            showCustomAlert(error.response.data.message)
+            showCustomAlert(error.response?.data?.message || "Failed to send OTP")
             setLoading(false)
         }
         
@@ -44,7 +44,7 @@ function ForgetPassword() {
 
         } catch (error) {
             console.log(error)
-            toast.error(error.response.data.message)
+            showCustomAlert(error.response?.data?.message || "Invalid OTP")
             setLoading(false)
         }
      }
@@ -68,7 +68,7 @@ function ForgetPassword() {
 
         } catch (error) {
               console.log(error)
-            showCustomAlert(error.response.data.message)
+            showCustomAlert(error.response?.data?.message || "Failed to reset password")
             setLoading(false)
         }
      }

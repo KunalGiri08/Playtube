@@ -32,28 +32,34 @@ const SavedContentPage = () => {
   useEffect(() => {
     const fetchSavedContent = async () => {
       try {
-        // Parallel request -> shorts + videos
-       const shortsRes = await axios.get(`${serverUrl}/api/content/saveshorts`, {
-  withCredentials: true,
-});
-setSavedShorts(shortsRes.data || []);
+        const [shortsResult, videosResult] = await Promise.allSettled([
+          axios.get(`${serverUrl}/api/content/saveshorts`, { withCredentials: true }),
+          axios.get(`${serverUrl}/api/content/savevideos`, { withCredentials: true }),
+        ]);
 
-const videosRes = await axios.get(`${serverUrl}/api/content/savevideos`, {
-  withCredentials: true,
-});
-setSavedVideos(videosRes.data || []);
+        const shortsData =
+          shortsResult.status === "fulfilled" && Array.isArray(shortsResult.value?.data)
+            ? shortsResult.value.data
+            : [];
+        setSavedShorts(shortsData);
+
+        const videosData =
+          videosResult.status === "fulfilled" && Array.isArray(videosResult.value?.data)
+            ? videosResult.value.data
+            : [];
+        setSavedVideos(videosData);
 
         // ✅ video duration calculate karo
-        if (Array.isArray(videosRes.data)) {
-          videosRes.data.forEach((video) => {
+        videosData.forEach((video) => {
+          if (video?.videoUrl) {
             getVideoDuration(video.videoUrl, (formattedTime) => {
               setDurations((prev) => ({
                 ...prev,
                 [video._id]: formattedTime,
               }));
             });
-          });
-        }
+          }
+        });
       } catch (error) {
         console.error("Error fetching saved content:", error);
       } finally {

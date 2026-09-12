@@ -347,7 +347,11 @@ export const getSubscribedContent = async (req, res) => {
       });
 
     if (!subscribedChannels || subscribedChannels.length === 0) {
-      return res.status(404).json({ message: "No subscribed channels found" });
+      return res.status(200).json({
+        subscribedChannels: [],
+        videos: [],
+        shorts: [],
+      });
     }
 
     // Separate out videos and shorts from all subscribed channels
@@ -472,29 +476,36 @@ export const getRecommendedContent = async (req, res) => {
       .map(k => k.split(" ")) // split words
       .flat();
 
-    // ✅ Build regex conditions
+    // ✅ Build regex conditions safely
     const videoConditions = [];
     const shortConditions = [];
 
+    const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
     allKeywords.forEach(kw => {
+      const cleanKw = escapeRegex(kw.trim());
+      if (!cleanKw) return;
       videoConditions.push(
-        { title: { $regex: kw, $options: "i" } },
-        { description: { $regex: kw, $options: "i" } },
-        { tags: { $regex: kw, $options: "i" } }
+        { title: { $regex: cleanKw, $options: "i" } },
+        { description: { $regex: cleanKw, $options: "i" } },
+        { tags: { $regex: cleanKw, $options: "i" } }
       );
       shortConditions.push(
-        { title: { $regex: kw, $options: "i" } },
-        { tags: { $regex: kw, $options: "i" } }
+        { title: { $regex: cleanKw, $options: "i" } },
+        { tags: { $regex: cleanKw, $options: "i" } }
       );
     });
 
-    // ✅ Recommended content
-    const recommendedVideos = await Video.find({ $or: videoConditions })
-      .populate("channel comments.author comments.replies.author");
+    // ✅ Recommended content (safely check conditions array is non-empty)
+    const recommendedVideos = videoConditions.length > 0
+      ? await Video.find({ $or: videoConditions }).populate("channel comments.author comments.replies.author")
+      : [];
 
-    const recommendedShorts = await Short.find({ $or: shortConditions })
-      .populate("channel", "name avatar")
-      .populate("likes", "username photoUrl");
+    const recommendedShorts = shortConditions.length > 0
+      ? await Short.find({ $or: shortConditions })
+          .populate("channel", "name avatar")
+          .populate("likes", "username photoUrl")
+      : [];
 
     // ✅ Remaining content (exclude recommended)
     const recommendedVideoIds = recommendedVideos.map(v => v._id);
