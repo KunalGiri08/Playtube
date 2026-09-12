@@ -104,13 +104,13 @@ const handleUpdate = async () => {
       );
 
       // Remove playlist from Redux
-      const updatedPlaylists = channelData.playlists.filter(
+      const updatedPlaylists = (channelData?.playlists || []).filter(
         (p) => p._id !== playlistId
       );
       dispatch(setChannelData({ ...channelData, playlists: updatedPlaylists }));
 
       showCustomAlert("Playlist deleted successfully");
-      navigate("/");
+      navigate("/ptstudio/content");
     } catch (error) {
       console.error(error);
       showCustomAlert(error.response?.data?.message || "Failed to delete playlist");

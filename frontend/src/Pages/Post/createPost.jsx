@@ -6,10 +6,12 @@ import { serverUrl } from "../../App";
 import { showCustomAlert } from "../../component/CustomAlert";
 import axios from "axios";
 import { setChannelData } from "../../redux/userSlice";
+import { setAllPostData } from "../../redux/contentSlice";
 import { useNavigate } from "react-router-dom";
 
 const CreatePost = () => {
   const { channelData } = useSelector((state) => state.user);
+  const { allPostData } = useSelector((state) => state.content);
   const dispatch = useDispatch();
   const navigate = useNavigate()
 
@@ -34,11 +36,14 @@ const CreatePost = () => {
         withCredentials: true,
       });
 
+      const newPost = res.data?.post || res.data;
+
       const updatedChannel = {
         ...channelData,
-        posts: [...(channelData.posts || []), res.data.post],
+        communityPosts: [...(channelData?.communityPosts || []), newPost],
       };
       dispatch(setChannelData(updatedChannel));
+      dispatch(setAllPostData([...(allPostData || []), newPost]));
 
       showCustomAlert("Post Published Successfully!");
       setContent("");

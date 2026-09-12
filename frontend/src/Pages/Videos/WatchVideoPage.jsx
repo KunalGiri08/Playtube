@@ -64,23 +64,42 @@ const WatchVideoPage = () => {
 
 
   useEffect(() => {
-    if (!videoId || !allVideoData) return;
+    if (!videoId) return;
 
-    // Redux me se current video nikal lo
-    const currentVideo = allVideoData.find((v) => v._id === videoId);
+    let isMounted = true;
+
+    // Redux me se current video nikal lo agar present hai
+    const currentVideo = (allVideoData || []).find((v) => v._id === videoId);
     if (currentVideo) {
       setVideo(currentVideo);
-      setChannel(currentVideo.channel || [])
+      setChannel(currentVideo.channel || {});
       setComments(currentVideo.comments || []);
+    } else {
+      // Fallback API call so direct URL access and browser refresh work reliably
+      axios
+        .get(`${serverUrl}/api/content/fetch-video/${videoId}`, { withCredentials: true })
+        .then((res) => {
+          if (isMounted && res.data) {
+            setVideo(res.data);
+            setChannel(res.data.channel || {});
+            setComments(res.data.comments || []);
+          }
+        })
+        .catch((err) => console.error("Error fetching video:", err));
     }
 
     // ✅ view count update karo
     axios.put(`${serverUrl}/api/content/video/${videoId}/add-view`, {}, { withCredentials: true })
       .then(res => {
-        setVideo((prev) => prev ? { ...prev, views: res.data.views } : prev);
+        if (isMounted) {
+          setVideo((prev) => prev ? { ...prev, views: res.data.views } : prev);
+        }
       })
       .catch(err => console.error(err));
 
+    return () => {
+      isMounted = false;
+    };
   }, [videoId, allVideoData]);
 
 
@@ -245,6 +264,14 @@ const WatchVideoPage = () => {
 
 
 
+  if (!video) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh] bg-[#0f0f0f] text-white">
+        <ClipLoader size={35} color="white" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex bg-[#0f0f0f] text-white flex-col lg:flex-row gap-6 p-4 lg:p-6">
       {/* Left - Video & Details */}
@@ -347,12 +374,13 @@ const WatchVideoPage = () => {
 
           </div>
           <div className="flex items-center gap-6 mt-3">
-            <IconButton icon={FaThumbsUp} active={video?.likes.includes(userData?._id)} label="Like" count={video?.likes.length} onClick={handleLike} />
-            <IconButton icon={FaThumbsDown} active={video?.dislikes.includes(userData?._id)} label="Dislike" count={video?.dislikes.length} onClick={handleDislike} />
+            <IconButton icon={FaThumbsUp} active={Boolean(video?.likes?.includes(userData?._id))} label="Like" count={video?.likes?.length || 0} onClick={handleLike} />
+            <IconButton icon={FaThumbsDown} active={Boolean(video?.dislikes?.includes(userData?._id))} label="Dislike" count={video?.dislikes?.length || 0} onClick={handleDislike} />
             <IconButton icon={FaDownload} label="Download" onClick={() => {
-              const link = document.createElement("a"); link.href = video?.videoUrl; link.download = `${video?.title}.mp4`; link.click();
+              if (!video?.videoUrl) return;
+              const link = document.createElement("a"); link.href = video?.videoUrl; link.download = `${video?.title || "video"}.mp4`; link.click();
             }} />
-            <IconButton icon={FaBookmark} active={video?.saveBy.includes(userData?._id)} label="Save" onClick={handleSave} />
+            <IconButton icon={FaBookmark} active={Boolean(video?.saveBy?.includes(userData?._id))} label="Save" onClick={handleSave} />
           </div>
         </div>
 
@@ -387,7 +415,7 @@ const WatchVideoPage = () => {
                   {comment?.replies?.map((reply) => (
                     <div key={reply._id} className="p-2 bg-[#2a2a2a] rounded ">
                       <div className="flex items-center justify-start gap-1"><img src={reply?.author?.photoUrl} alt="" className="w-8 h-8 rounded-full" />
-                        <h1 className="text-[13px]">@{comment?.author?.username.toLowerCase()}</h1></div>
+                        <h1 className="text-[13px]">@{reply?.author?.username?.toLowerCase() || "user"}</h1></div>
                       <p className="px-[20px] py-[20px]">{reply?.message}</p>
 
                     </div>

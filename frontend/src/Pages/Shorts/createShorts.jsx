@@ -46,7 +46,7 @@ const CreateShort = () => {
           withCredentials: true,
         }
       );
-      dispatch(setAllShortData([...allShortData,result.data.short]))
+      dispatch(setAllShortData([...(allShortData || []), result.data.short]))
       const updatedChannel = {
         ...channelData,
         shorts: [...(channelData.shorts || []), result.data.short],

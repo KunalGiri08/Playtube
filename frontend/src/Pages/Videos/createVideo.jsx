@@ -46,7 +46,7 @@ const CreateVideo = () => {
       const result = await axios.post(`${serverUrl}/api/content/upload-video`, formData, {
         withCredentials: true,
       });
-      dispatch(setAllVideoData([...allVideoData,result.data.video]))
+      dispatch(setAllVideoData([...(allVideoData || []), result.data.video]))
        // ✅ Update Redux channelData.videos instantly
       const updatedChannel = {
         ...channelData,

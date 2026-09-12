@@ -16,16 +16,26 @@ export default function ChannelPage() {
 
   const channelData = allChannelData?.find((ch) => ch._id === channelId);
 
-  const [channel, setChannel] = useState(channelData);
+  const [channel, setChannel] = useState(channelData || null);
   const [activeTab, setActiveTab] = useState("Videos");
-  const [loading, setLoading] = useState(false)
-  const [isSubscribed, setIsSubscribed] = useState(
-    channel?.subscribers?.some(
-      (sub) =>
-        sub._id?.toString() === userData._id?.toString() ||
-        sub?.toString() === userData._id?.toString()
-    )
-  );
+  const [loading, setLoading] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  useEffect(() => {
+    if (channelData) {
+      setChannel(channelData);
+    } else if (channelId) {
+      axios
+        .get(`${serverUrl}/api/user/getallchannel`, { withCredentials: true })
+        .then((res) => {
+          if (Array.isArray(res.data)) {
+            const found = res.data.find((c) => c._id === channelId);
+            if (found) setChannel(found);
+          }
+        })
+        .catch((err) => console.error("Error fetching channel:", err));
+    }
+  }, [channelData, channelId]);
 
   if (!channel) {
     return (
@@ -68,14 +78,18 @@ export default function ChannelPage() {
 
 
   useEffect(() => {
-    setIsSubscribed(
-      channel?.subscribers?.some(
-        (sub) =>
-          sub._id?.toString() === userData._id?.toString() ||
-          sub?.toString() === userData._id?.toString()
-      )
-    );
-  }, [channel.subscribers, userData._id]);
+    if (channel?.subscribers && userData?._id) {
+      setIsSubscribed(
+        channel.subscribers.some(
+          (sub) =>
+            (sub?._id ? sub._id.toString() : sub?.toString()) ===
+            userData._id.toString()
+        )
+      );
+    } else {
+      setIsSubscribed(false);
+    }
+  }, [channel?.subscribers, userData?._id]);
 
 
   return (
@@ -206,7 +220,10 @@ export default function ChannelPage() {
         {activeTab === "Community" && (
           <div className="flex items-center justify-start gap-9 flex-wrap">
             {allPostData
-              ?.filter(post => post.channel._id === channelId) // sirf current channel ke posts
+              ?.filter((post) => {
+                const pChanId = post.channel?._id ? post.channel._id.toString() : post.channel?.toString();
+                return pChanId === channelId;
+              })
               .map((post) => (
                 <CommunityCard
                   key={post._id}

@@ -3,6 +3,8 @@ import youtubeLogo from "../assets/playtube1.png";
 import { FaArrowLeft, FaUserCircle } from "react-icons/fa";
 import { showCustomAlert } from "../component/CustomAlert";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 import { ClipLoader } from "react-spinners";
 import axios from "axios";
 import { serverUrl } from "../App";
@@ -15,6 +17,7 @@ function YoutubeSignin() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Sign In
   const handleSignIn = async () => {
@@ -38,7 +41,7 @@ function YoutubeSignin() {
       );
 
       console.log(result.data);
-
+      dispatch(setUserData(result.data));
       showCustomAlert("SignIn Successfully");
       navigate("/");
 

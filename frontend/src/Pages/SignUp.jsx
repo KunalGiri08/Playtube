@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 import { FaArrowLeft, FaUserCircle } from "react-icons/fa";
 import { showCustomAlert } from "../component/CustomAlert";
 import { ClipLoader } from "react-spinners";
@@ -9,6 +11,7 @@ import youtube from "../assets/playtube1.png";
 
 const CreateAccount = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const avatarRef = useRef();
 
   const [step, setStep] = useState(1);
@@ -86,7 +89,7 @@ const CreateAccount = () => {
       );
 
       console.log(result.data);
-
+      dispatch(setUserData(result.data));
       showCustomAlert("Account Created");
       navigate("/");
 

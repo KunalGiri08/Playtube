@@ -7,12 +7,14 @@ import { MdDelete, MdSaveAlt } from "react-icons/md";
 import { serverUrl } from "../../App";
 import { showCustomAlert } from "../../component/CustomAlert";
 import { setAllVideoData } from "../../redux/contentSlice";
+import { setChannelData } from "../../redux/userSlice";
 
 const ManageVideo = () => {
   const { videoId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { allVideoData } = useSelector((state) => state.content);
+  const { channelData } = useSelector((state) => state.user);
 
   const [video, setVideo] = useState(null);
   const [title, setTitle] = useState("");
@@ -57,10 +59,17 @@ const ManageVideo = () => {
       );
 
       // update redux
-      const updatedVideos = allVideoData.map((v) =>
+      const updatedVideos = (allVideoData || []).map((v) =>
         v._id === videoId ? result.data.video : v
       );
       dispatch(setAllVideoData(updatedVideos));
+
+      if (channelData?.videos) {
+        const updatedChannelVideos = channelData.videos.map((v) =>
+          v._id === videoId ? result.data.video : v
+        );
+        dispatch(setChannelData({ ...channelData, videos: updatedChannelVideos }));
+      }
 
       showCustomAlert("Video updated successfully");
       
@@ -81,10 +90,15 @@ const ManageVideo = () => {
       });
 
       // remove from redux
-      dispatch(setAllVideoData(allVideoData.filter((v) => v._id !== videoId)));
+      dispatch(setAllVideoData((allVideoData || []).filter((v) => v._id !== videoId)));
+
+      if (channelData?.videos) {
+        const updatedChannelVideos = channelData.videos.filter((v) => v._id !== videoId);
+        dispatch(setChannelData({ ...channelData, videos: updatedChannelVideos }));
+      }
 
       showCustomAlert("Video deleted successfully");
-      navigate("/");
+      navigate("/ptstudio/content");
     } catch (error) {
       showCustomAlert(error.response?.data?.message || "Delete failed");
     }

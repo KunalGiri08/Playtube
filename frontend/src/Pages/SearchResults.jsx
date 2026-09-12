@@ -199,7 +199,7 @@ const SearchResults = () => {
     (!results.playlists || results.playlists.length === 0);
 
   return (
-    <div className="px-6 py-4 bg-[#00000051] border border-gray-800 mb-[20px] rounded-lg">
+    <div className="px-6 py-4 bg-[#00000051] border border-gray-800 mb-[20px] rounded-lg mt-[44px]">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">
           Search Results {query && <span className="text-gray-400 font-normal">for "{query}"</span>}
