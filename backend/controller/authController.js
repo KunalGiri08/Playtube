@@ -5,6 +5,36 @@ import bcrypt from "bcryptjs"
 import genToken from "../config/token.js";
 import sendMail from "../config/sendMail.js";
 
+const isSecureEnv = (req) => {
+    return Boolean(
+        process.env.NODE_ENV === "production" ||
+        process.env.RENDER === "true" ||
+        req?.secure ||
+        req?.headers?.["x-forwarded-proto"] === "https"
+    );
+};
+
+export const getCookieOptions = (req) => {
+    const isSecure = isSecureEnv(req);
+    return {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: isSecure ? "none" : "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+};
+
+export const getClearCookieOptions = (req) => {
+    const isSecure = isSecureEnv(req);
+    return {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: isSecure ? "none" : "lax",
+        path: "/",
+    };
+};
+
 export const signUp = async (req, res) => {
     try {
         const { username, email, password } = req.body
@@ -38,12 +68,7 @@ export const signUp = async (req, res) => {
 
         let token = await genToken(user._id)
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "Strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        })
+        res.cookie("token", token, getCookieOptions(req))
 
         return res.status(201).json(user)
 
@@ -70,12 +95,7 @@ export const signIn = async (req, res) => {
 
         let token = await genToken(user._id)
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "Strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        })
+        res.cookie("token", token, getCookieOptions(req))
 
         return res.status(200).json(user)
 
@@ -86,7 +106,7 @@ export const signIn = async (req, res) => {
 
 export const signOut = async (req, res) => {
     try {
-        res.clearCookie("token")
+        res.clearCookie("token", getClearCookieOptions(req))
         return res.status(200).json({ message: "Signout successfully" })
     } catch (error) {
         return res.status(500).json({ message: `Signout error ${error}` })
@@ -125,12 +145,7 @@ export const googleAuth = async (req, res) => {
 
     let token = await genToken(user._id);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie("token", token, getCookieOptions(req));
 
     return res.status(200).json(user);
 

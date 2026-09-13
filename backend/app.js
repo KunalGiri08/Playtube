@@ -4,10 +4,12 @@ import cookieParser from "cookie-parser";
 
 const app = express()
 
+app.set("trust proxy", 1);
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  process.env.CLIENT_URL,
+  process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/$/, "") : null,
 ].filter(Boolean);
 
 app.use(cors({

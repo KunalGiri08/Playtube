@@ -224,7 +224,7 @@ export const updateChannel = async (req, res) => {
 
 export const toggleSubscribe = async (req, res) => {
   try {
-    const { channelId } = req.body;   // ✅ body se channelId
+    const channelId = req.body?.channelId || req.params?.channelId;   // ✅ body ya params se channelId
     const userId = req.userId;        // ✅ middleware se userId (JWT auth)
 
     if (!channelId) {
