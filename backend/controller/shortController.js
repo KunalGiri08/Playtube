@@ -36,6 +36,7 @@ export const createShort = async (req, res) => {
       short: newShort,
     });
   } catch (error) {
+    console.error("Error creating short:", error);
     res.status(500).json({ message: "Error creating short", error: error.message });
   }
 };

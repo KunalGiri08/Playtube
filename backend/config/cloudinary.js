@@ -5,9 +5,9 @@ dotenv.config();
 
 const uploadOnCloudinary = async (filePath) => {
     cloudinary.config({
-        cloud_name: process.env.CLOUD_NAME,
-        api_key: process.env.API_KEY,
-        api_secret: process.env.API_SECRET,
+        cloud_name: process.env.CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.API_KEY || process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.API_SECRET || process.env.CLOUDINARY_API_SECRET,
     });
 
     try {
@@ -24,10 +24,14 @@ const uploadOnCloudinary = async (filePath) => {
 
         return result.secure_url;
     } catch (error) {
-        console.log("CLOUDINARY ERROR:", error);
+        console.error("CLOUDINARY ERROR:", error?.message || error);
 
         if (filePath && fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            try {
+                fs.unlinkSync(filePath);
+            } catch (unlinkErr) {
+                console.error("Error removing local temp file:", unlinkErr?.message);
+            }
         }
 
         throw error;

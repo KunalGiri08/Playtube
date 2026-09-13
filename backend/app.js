@@ -40,5 +40,13 @@ app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)
 app.use("/api/content", contentRouter)
 
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error("SERVER ERROR:", err?.message || err);
+  const statusCode = typeof err.status === "number" ? err.status : (typeof err.statusCode === "number" ? err.statusCode : 500);
+  return res.status(statusCode).json({
+    message: err.message || "Internal server error"
+  });
+});
 
 export default app
